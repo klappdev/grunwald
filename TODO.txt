@@ -1,0 +1,16 @@
+Features which will be implemented in future:
+=============================================
+1. Add base menu application (File, Settings, About).
+2. Add Settings window.
+3. Search clear functionality.
+4. Data mediator (network + database) fetch words during search.
+5. Implement i18n support.
+6. Implement Text-to-Speach for pronounce word.
+7. Add loading animation to the list words.
+8. Display loaded image in qml ui.
+9. Load word image using REST api.
+10. Save word image in database as blob type. 
+11. Add alternative future+threadpool support for database.
+12. Integrate QCoro library additional support.
+13. Add test for database, network.
+14. Integrate static, dynamic (sanitizer) analyzers.

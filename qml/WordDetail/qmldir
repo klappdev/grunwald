@@ -1,0 +1,6 @@
+module WordDetail
+WordDetailView 1.0 WordDetailView.qml
+WordDetailHeaderView 1.0 WordDetailHeaderView.qml
+WordDetailActionView 1.0 WordDetailActionView.qml
+WordDetailContentView 1.0 WordDetailContentView.qml
+WordCardView 1.0 WordCardView.qml

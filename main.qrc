@@ -1,0 +1,34 @@
+<RCC>
+    <qresource prefix="/">
+	<file>res/image/word_icon.png</file>
+	<file>res/image/speak.png</file>
+	<file>res/image/speak_inverted.png</file>
+	<file>res/image/star.png</file>
+	<file>res/image/star_inverted.png</file>
+	<file>res/image/share.png</file>
+	<file>res/image/share_inverted.png</file>
+
+        <file>qml/main.qml</file>
+	
+	<file>qml/Commons/RoundImage.qml</file>
+	<file>qml/Commons/RoundRectangle.qml</file>
+	<file>qml/Commons/qmldir</file>	
+
+	<file>qml/WordSearch/SearchWordView.qml</file>
+	<file>qml/WordSearch/qmldir</file>
+
+	<file>qml/WordList/WordListView.qml</file>
+	<file>qml/WordList/WordDelegate.qml</file>
+	<file>qml/WordList/qmldir</file>
+
+	<file>qml/WordDetail/WordDetailView.qml</file>
+	<file>qml/WordDetail/WordDetailHeaderView.qml</file>
+	<file>qml/WordDetail/WordDetailActionView.qml</file>
+	<file>qml/WordDetail/WordDetailContentView.qml</file>
+	<file>qml/WordDetail/WordCardView.qml</file>
+	<file>qml/WordDetail/qmldir</file>
+
+        <file>qml/Theme/Style.qml</file>
+        <file>qml/Theme/qmldir</file>
+    </qresource>
+</RCC>

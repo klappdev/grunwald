@@ -1,0 +1,3 @@
+module WordList
+WordListView 1.0 WordListView.qml
+WordDelegate 1.0 WordDelegate.qml
