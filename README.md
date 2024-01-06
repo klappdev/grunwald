@@ -1,6 +1,6 @@
-# notiz
+# grunwald
 
-Qt qml German-English dictionary application.
+Qt qml German-English dictionary application.<br/>
 The application searches online words with wiktionary REST API.
 ![List of words](files/grunwald_1.png "GrunWald")
 
