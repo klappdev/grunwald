@@ -22,35 +22,37 @@
  * SOFTWARE.
  */
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QDebug>
+#pragma once
 
-#if 1 /*ONLY FOR TESTING*/
-#include "net/DictionaryService.hpp"
-#endif
+#include <QAbstractListModel>
+#include <QModelIndex>
 
-int main(int argc, char *argv[]) {
-    QCoreApplication::setOrganizationName("kl");
-    QCoreApplication::setApplicationName("Grunwald");
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#include <QList>
 
-    QGuiApplication app(argc, argv);
+#include "common/Word.hpp"
 
-    QQmlApplicationEngine engine;
-    engine.addImportPath(":/qml");
-    engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
+namespace grunwald {
 
-    if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Load main.qml are failed!" << endl;
-        return -1;
-    }
+    class WordModel final : public QAbstractListModel {
+        Q_OBJECT
+    public:
+        explicit WordModel(QObject* parent = nullptr);
+        ~WordModel();
 
-#if 1 /*ONLY FOR TESTING*/
-    grunwald::DictionaryService service;
+        int rowCount(const QModelIndex& index = QModelIndex()) const override;
+        QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    service.getWordContent("Katze");
-#endif
+        QHash<int, QByteArray> roleNames() const override;
 
-    return app.exec();
+        void setWords(QList<Word>&& list);
+        const QList<Word>& getWords() const;
+
+    private:
+        enum class WordRoles {
+            NameRole = Qt::UserRole + 1,
+            DateRole
+        };
+
+        QList<Word> mWords;
+    };
 }
