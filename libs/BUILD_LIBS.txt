@@ -1,0 +1,18 @@
+
+QCumboParser library
+====================
+1) Download and extract QCumboParser library.
+$ https://github.com/lagner/QGumboParser
+
+2) Download and extract gumbo-parser library in QCumboParser/gumbo-parser folder.
+$ https://github.com/google/gumbo-parser
+
+3) Install pro2cmake
+$ https://www.qt.io/blog/introducing-qmake2cmake
+
+4) Comment last 3 lines in *.pro file.
+
+5) Convert qmake project file to cmake. Minimum python version is 3.7
+$ python3 pro2cmake.py QGumboParser.pro
+
+

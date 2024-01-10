@@ -14,3 +14,4 @@ Features which will be implemented in future:
 12. Integrate QCoro library additional support.
 13. Add test for database, network.
 14. Integrate static, dynamic (sanitizer) analyzers.
+15. Implement Qt6 static qml registration.
