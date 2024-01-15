@@ -26,6 +26,7 @@
 
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QEventLoop>
 
 static constexpr const char* const TAG = "[DictionaryService] ";
 static const QString BASE_API_URL = "https://en.wiktionary.org";
@@ -45,9 +46,9 @@ namespace grunwald {
     void DictionaryService::getWordContent(const QString& name) {
         QNetworkRequest request;
 
-        if (!mNetworkConfigurationManager.isOnline()) {
+        if (!checkInternetConnection()) {
             const QString errorMessage = REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL);
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             emit wordProcessedError(errorMessage);
             return;
@@ -59,7 +60,7 @@ namespace grunwald {
         request.setUrl(QUrl(BASE_API_URL + prepareApiUrl));
         request.setRawHeader("Content-Type","application/json");
 
-        qInfo() << TAG << "Prepare request: " << request.url().toString() << endl;
+        qInfo() << TAG << "Prepare request: " << request.url().toString() << Qt::endl;
 
         QNetworkReply* reply = mNetworkManager.get(request);
 
@@ -70,9 +71,9 @@ namespace grunwald {
     void DictionaryService::getWordImage(const QString& name) {
         QNetworkRequest request;
 
-        if (!mNetworkConfigurationManager.isOnline()) {
+        if (!checkInternetConnection()) {
             const QString errorMessage = REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL);
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             emit wordProcessedError(errorMessage);
             return;
@@ -85,7 +86,7 @@ namespace grunwald {
         request.setUrl(QUrl(BASE_API_URL + prepareApiUrl));
         request.setRawHeader("Content-Type","application/json");
 
-        qInfo() << TAG << "Prepare request: " << request.url().toString() << endl;
+        qInfo() << TAG << "Prepare request: " << request.url().toString() << Qt::endl;
 
         QNetworkReply* reply = mNetworkManager.get(request);
 
@@ -143,5 +144,26 @@ namespace grunwald {
 
         reply->close();
         reply->deleteLater();
+    }
+
+    bool DictionaryService::checkInternetConnection() {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+        QEventLoop eventLoop;
+        QNetworkRequest request(QUrl("http://www.google.com"));
+
+        QNetworkReply* reply = mNetworkManager.get(request);
+
+        QObject::connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
+        eventLoop.exec();
+
+        const bool result = reply->bytesAvailable();
+
+        reply->close();
+        reply->deleteLater();
+
+        return result;
+#else
+        return mNetworkConfigurationManager.isOnline();
+#endif
     }
 }

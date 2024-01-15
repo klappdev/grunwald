@@ -57,9 +57,9 @@ namespace grunwald {
         database.setDatabaseName(databaseFile.absolutePath());
 
         if (!database.open()) {
-            qWarning() << TAG << "Can't open db: " << database.lastError() << endl;
+            qWarning() << TAG << "Can't open db: " << database.lastError() << Qt::endl;
         } else {
-            qInfo() << TAG << "DB connected!" << endl;
+            qInfo() << TAG << "DB connected!" << Qt::endl;
         }
 
         database.exec("PRAGMA locking_mode = EXCLUSIVE");
@@ -78,9 +78,9 @@ namespace grunwald {
                                     description TEXT NOT NULL,
                                     date TEXT NOT NULL);
                             )xxx")) {
-            qWarning() << TAG << "Table word was not created!" << mDatabase.lastError() << endl;
+            qWarning() << TAG << "Table word was not created!" << mDatabase.lastError() << Qt::endl;
         } else {
-            qInfo() << TAG << "Table word was created!" << endl;
+            qInfo() << TAG << "Table word was created!" << Qt::endl;
         }
 
         mSqlQuery.executedQuery();
@@ -218,7 +218,7 @@ namespace grunwald {
         Word word = {};
 
         if (!mSqlQuery.exec("SELECT * FROM word;")) {
-           qWarning() << TAG << "Select all word error: " << mSqlQuery.lastError() << endl;
+           qWarning() << TAG << "Select all word error: " << mSqlQuery.lastError() << Qt::endl;
            return mSqlQuery.lastError().text();
         }
 
@@ -240,7 +240,7 @@ namespace grunwald {
         mSqlQuery.addBindValue("%" + name + "%");
 
         if (!mSqlQuery.exec()) {
-           qWarning() << "Search words error: " << mSqlQuery.lastError() << endl;
+           qWarning() << "Search words error: " << mSqlQuery.lastError() << Qt::endl;
            return mSqlQuery.lastError().text();
         }
 
@@ -264,7 +264,7 @@ namespace grunwald {
         mSqlQuery.addBindValue(ascending);
 
         if (!mSqlQuery.exec()) {
-           qWarning() << TAG << "sort words error: " << mSqlQuery.lastError() << endl;
+           qWarning() << TAG << "sort words error: " << mSqlQuery.lastError() << Qt::endl;
            return mSqlQuery.lastError().text();
         }
 

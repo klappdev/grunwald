@@ -24,29 +24,33 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QIcon>
 #include <QDebug>
 
-#if 1 /*ONLY FOR TESTING*/
+#if 0 /*ONLY FOR TESTING*/
 #include "net/DictionaryService.hpp"
 #endif
 
 int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationName("kl");
     QCoreApplication::setApplicationName("Grunwald");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
 
     QGuiApplication app(argc, argv);
+    app.setWindowIcon(QIcon(":/res/image/dict.png"));
 
     QQmlApplicationEngine engine;
     engine.addImportPath(":/qml");
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
 
     if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Load main.qml are failed!" << endl;
+        qCritical() << "Load main.qml are failed!" << Qt::endl;
         return -1;
     }
 
-#if 1 /*ONLY FOR TESTING*/
+#if 0 /*ONLY FOR TESTING*/
     grunwald::DictionaryService service;
 
     service.getWordContent("Katze");

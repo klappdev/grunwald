@@ -24,9 +24,13 @@
 
 #pragma once
 
-#include <QUrl>
-#include <QNetworkAccessManager>
+#include <QtVersionChecks>
+
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
 #include <QNetworkConfigurationManager>
+#endif
+#include <QNetworkAccessManager>
+#include <QUrl>
 
 #include "net/WordParser.hpp"
 #include "common/Word.hpp"
@@ -54,9 +58,12 @@ namespace grunwald {
         void handleWordImageRequest();
 
     private:
-        QNetworkAccessManager mNetworkManager;
-        QNetworkConfigurationManager mNetworkConfigurationManager;
+        bool checkInternetConnection();
 
+        QNetworkAccessManager mNetworkManager;
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
+        QNetworkConfigurationManager mNetworkConfigurationManager;
+#endif
         WordParser mWordParser;
     };
 }

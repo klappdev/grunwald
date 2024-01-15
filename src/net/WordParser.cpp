@@ -39,7 +39,7 @@ namespace grunwald {
     }
 
     auto WordParser::parseWordContent(const QByteArray& remoteData) -> Result<Word, ParserError> {
-        qInfo() << TAG << "Remote data: " << remoteData << endl;
+        qInfo() << TAG << "Remote data: " << remoteData << Qt::endl;
 
         QJsonParseError jsonParserError;
 
@@ -47,14 +47,14 @@ namespace grunwald {
 
         if (jsonParserError.error != QJsonParseError::NoError) {
             const QString errorMessage = "Json parse error: " + jsonParserError.errorString();
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
 
         if (!jsonDocument.isObject()) {
             const QString errorMessage = "Json document is not object";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -63,7 +63,7 @@ namespace grunwald {
 
         if (jsonObject.isEmpty()) {
             const QString errorMessage = "Parse json data is not correct";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -72,7 +72,7 @@ namespace grunwald {
 
         if (!queryValue.isObject()) {
             const QString errorMessage = "Parse json data is not correct, 'query' doesn't exists";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -81,7 +81,7 @@ namespace grunwald {
 
         if (!pagesValue.isObject()) {
             const QString errorMessage = "Parse json data is not correct, 'pages' doesn't exists";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -90,7 +90,7 @@ namespace grunwald {
 
         if (pagesObject.isEmpty()) {
             const QString errorMessage = "Parse json data is not correct, first 'page' doesn't exists";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -100,18 +100,18 @@ namespace grunwald {
 
         if (!extractValue.isString()) {
             const QString errorMessage = "Parse json data is not correct, 'extract' doesn't exists";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
 
-        qInfo() << TAG << "Remote word content: " << extractValue << endl;
+        qInfo() << TAG << "Remote word content: " << extractValue << Qt::endl;
 
         return parseRemoteWord(extractValue.toString());
     }
 
     auto WordParser::parseWordImage(const QByteArray& remoteData) -> Result<QUrl, ParserError> {
-        qInfo() << TAG << "Remote data: " << remoteData << endl;
+        qInfo() << TAG << "Remote data: " << remoteData << Qt::endl;
 
         QJsonParseError jsonParserError;
 
@@ -119,14 +119,14 @@ namespace grunwald {
 
         if (jsonParserError.error != QJsonParseError::NoError) {
             const QString errorMessage = "Json parse error: " + jsonParserError.errorString();
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
 
         if (!jsonDocument.isObject()) {
             const QString errorMessage = "Json document is not object";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -135,7 +135,7 @@ namespace grunwald {
 
         if (jsonObject.isEmpty()) {
             const QString errorMessage = "Parse json data is not correct";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -144,7 +144,7 @@ namespace grunwald {
 
         if (!queryValue.isObject()) {
             const QString errorMessage = "Parse json data is not correct, 'query' doesn't exists";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -153,7 +153,7 @@ namespace grunwald {
 
         if (!pagesValue.isObject()) {
             const QString errorMessage = "Parse json data is not correct, 'pages' doesn't exists";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -162,7 +162,7 @@ namespace grunwald {
 
         if (pagesObject.isEmpty()) {
             const QString errorMessage = "Parse json data is not correct, first 'page' doesn't exists";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -172,7 +172,7 @@ namespace grunwald {
 
         if (!originalValue.isObject()) {
             const QString errorMessage = "Parse json data is not correct, 'original' doesn't exists";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
@@ -181,12 +181,12 @@ namespace grunwald {
 
         if (!urlImageValue.isString()) {
             const QString errorMessage = "Parse json data is not correct, 'source' doesn't exists";
-            qWarning() << TAG << errorMessage << endl;
+            qWarning() << TAG << errorMessage << Qt::endl;
 
             return errorMessage;
         }
 
-        qInfo() << TAG << "Remote image url: " << urlImageValue << endl;
+        qInfo() << TAG << "Remote image url: " << urlImageValue << Qt::endl;
 
         return QUrl(urlImageValue.toString());
     }

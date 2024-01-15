@@ -24,18 +24,19 @@
 
 import QtQuick 2.9
 import QtQuick.Window 2.2
-import QtQuick.Controls 2.2 as QQC2
-
-import QtQuick.Controls 1.4 as QQC1
-import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls 2.2
 
 import Theme 1.0
 
 Rectangle {
     id: root
     color: Style.secondaryColor
+    border {
+        color: "lightgrey"
+        width: 1
+    }
 
-    QQC1.TextField {
+    TextField {
         id: searchTextEdit
         width: Window.width * 3 / 4
 
@@ -56,20 +57,18 @@ Rectangle {
             family: "Roboto Regular"
             pointSize: 12
         }
-        style: TextFieldStyle {
-            textColor: "black"
-            background: Rectangle {
-                color: "#ffffff"
-                radius: 4
-                border {
-                    color: "lightgrey"
-                    width: 1
-                }
+        //textColor: "black"
+        background: Rectangle {
+            color: "#ffffff"
+            radius: 4
+            border {
+                color: "lightgrey"
+                width: 1
             }
         }
     }
 
-    QQC2.Button {
+    Button {
         id: searchButton
         width: Window.width * 1 / 4
 

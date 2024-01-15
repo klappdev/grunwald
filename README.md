@@ -11,6 +11,6 @@ Perform the following actions for building project:
 cmake --build . --target all
 ```
 
-## Minimum requirements
+## Requirements
 C++20 <br/>
-Qt 5.14<br/>
+Qt 6<br/>

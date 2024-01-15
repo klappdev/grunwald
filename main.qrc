@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+    <file>res/image/dict.png</file>
 	<file>res/image/word_icon.png</file>
 	<file>res/image/speak.png</file>
 	<file>res/image/speak_inverted.png</file>
@@ -8,7 +9,7 @@
 	<file>res/image/share.png</file>
 	<file>res/image/share_inverted.png</file>
 
-        <file>qml/main.qml</file>
+    <file>qml/main.qml</file>
 	
 	<file>qml/Commons/RoundImage.qml</file>
 	<file>qml/Commons/RoundRectangle.qml</file>
