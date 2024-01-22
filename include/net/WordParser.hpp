@@ -28,27 +28,31 @@
 
 #include "common/Word.hpp"
 #include "util/Result.hpp"
+#include "util/Error.hpp"
+
+class QGumboNode;
 
 namespace grunwald {
-    using ParserError = QString; //FIXME: maybe use wrapper class
+    using ParserError = Error;
 
     class WordParser final {
     public:
         WordParser();
         ~WordParser();
 
-        auto parseWordContent(const QByteArray& remoteData) -> Result<Word, ParserError>;
+        auto parseWordContent(const QString& name, const QByteArray& remoteData) -> Result<Word, ParserError>;
         auto parseWordImage(const QByteArray& remoteData) -> Result<QUrl, ParserError>;
 
     private:
-        auto parseRemoteWord(const QString& remoteData) -> Result<Word, ParserError>;
-        auto parseLanguageWord(const QString& remoteData) -> Result<Word, ParserError>;
-        auto parseEtymologyWord(const QString& remoteData) -> Result<Word, ParserError>;
-        auto parseTranscriptionWord(const QString& remoteData) -> Result<Word, ParserError>;
-        auto parseTranslationWord(const QString& remoteData) -> Result<Word, ParserError>;
-        auto parseDescriptionWord(const QString& remoteData) -> Result<Word, ParserError>;
-        auto parseAssociationWord(const QString& remoteData) -> Result<Word, ParserError>;
-        auto parseAntonymsWord(const QString& remoteData) -> Result<Word, ParserError>;
-        auto parseSynonymsWord(const QString& remoteData) -> Result<Word, ParserError>;
+        auto parseRemoteWord(const QString& name, const QString& remoteData) -> Result<Word, ParserError>;
+        auto parseLanguageWord(const QGumboNode& node) -> Result<QString, ParserError>;
+        auto parseEtymologyWord(const QGumboNode& node) -> QString;
+        auto parseTranscriptionWord(const QGumboNode& node) -> QString;
+        auto parseTranslationWord(const QGumboNode& node) -> QString;
+        auto parseTypeWord(const QGumboNode& node) -> QString;
+        auto parseDescriptionWord(const QString& wordType, const QGumboNode& node) -> QString;
+        auto parseAssociationWord(const QGumboNode& node) -> QString;
+        auto parseAntonymsWord(const QGumboNode& node) -> QString;
+        auto parseSynonymsWord(const QGumboNode& node) -> QString;
     };
 }

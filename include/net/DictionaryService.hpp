@@ -34,9 +34,10 @@
 
 #include "net/WordParser.hpp"
 #include "common/Word.hpp"
+#include "util/Error.hpp"
 
 namespace grunwald {
-    using NetworkError = QString;
+    using NetworkError = Error;
 
     class DictionaryService final : public QObject {
         Q_OBJECT
@@ -65,5 +66,6 @@ namespace grunwald {
         QNetworkConfigurationManager mNetworkConfigurationManager;
 #endif
         WordParser mWordParser;
+        QString mWordName;
     };
 }

@@ -22,39 +22,26 @@
  * SOFTWARE.
  */
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QIcon>
+#pragma once
+
+#include <QMetaType>
 #include <QDebug>
 
-#if 1 /*ONLY FOR TESTING*/
-#include "net/DictionaryService.hpp"
-#endif
+namespace grunwald {
 
-int main(int argc, char *argv[]) {
-    QCoreApplication::setOrganizationName("kl");
-    QCoreApplication::setApplicationName("Grunwald");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
+    Q_NAMESPACE
+    enum class WordType {
+        Noun = 1,
+        Pronoun = 2,
+        Adjective = 3,
+        Verb = 4,
+        Adverb = 5,
+        Preposition = 6,
+        Conjunction = 7,
+        Interjection = 8,
 
-    QGuiApplication app(argc, argv);
-    app.setWindowIcon(QIcon(":/res/image/dict.png"));
-
-    QQmlApplicationEngine engine;
-    engine.addImportPath(":/qml");
-    engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
-
-    if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Load main.qml are failed!" << Qt::endl;
-        return -1;
-    }
-
-#if 1 /*ONLY FOR TESTING*/
-    grunwald::DictionaryService service;
-
-    service.getWordContent("Katze");
-#endif
-
-    return app.exec();
+        Unknown = 9
+    };
+    Q_ENUM_NS(WordType)
 }
+//Q_DECLARE_METATYPE(grunwald::WordType)

@@ -22,39 +22,31 @@
  * SOFTWARE.
  */
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QIcon>
-#include <QDebug>
+#pragma once
 
-#if 1 /*ONLY FOR TESTING*/
-#include "net/DictionaryService.hpp"
-#endif
+#include <QMetaEnum>
+#include <QString>
 
-int main(int argc, char *argv[]) {
-    QCoreApplication::setOrganizationName("kl");
-    QCoreApplication::setApplicationName("Grunwald");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
+namespace grunwald::EnumUtil {
 
-    QGuiApplication app(argc, argv);
-    app.setWindowIcon(QIcon(":/res/image/dict.png"));
+    template<typename E>
+        requires std::is_enum_v<E>
+    auto fromString(const QString& name) -> std::optional<E> {
+        bool ok = false;
+        auto result = static_cast<E>(QMetaEnum::fromType<E>().keyToValue(name.toUtf8(), &ok));
 
-    QQmlApplicationEngine engine;
-    engine.addImportPath(":/qml");
-    engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
-
-    if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Load main.qml are failed!" << Qt::endl;
-        return -1;
+        if (!ok) {
+            return std::nullopt;
+        } else {
+            return result;
+        }
     }
 
-#if 1 /*ONLY FOR TESTING*/
-    grunwald::DictionaryService service;
+    template<typename E>
+        requires std::is_enum_v<E>
+    auto toString(E value) -> QString {
+        const int result = static_cast<int>(value);
 
-    service.getWordContent("Katze");
-#endif
-
-    return app.exec();
+        return QString::fromUtf8(QMetaEnum::fromType<E>().valueToKey(result));
+    }
 }

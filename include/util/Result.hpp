@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #pragma once
 
 #include <variant>
@@ -31,7 +32,7 @@ namespace grunwald {
      * When migrate to C++23, better to use std::expected
      */
     template<typename V, typename E>
-    class /*[[nodiscard]]*/ Result final {
+    class [[nodiscard]] Result final {
     public:
         constexpr Result() = default;
         ~Result() = default;
@@ -89,7 +90,7 @@ namespace grunwald {
 
     template<typename V, typename E>
         requires std::is_void_v<V>
-    class /*[[nodiscard]]*/ Result<V, E> {
+    class [[nodiscard]] Result<V, E> {
     public:
         constexpr Result() = default;
         ~Result() = default;

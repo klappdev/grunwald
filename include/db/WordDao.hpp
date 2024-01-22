@@ -28,11 +28,12 @@
 
 #include "common/Word.hpp"
 #include "util/Result.hpp"
+#include "util/Error.hpp"
 
 namespace grunwald {
-    using DbError = QString;
+    using DbError = Error;
 
-    class WordDao final {
+    class WordDao final { //FIXME: extends to work with WordType, WordImage
     public:
         WordDao(const WordDao&) = delete;
         WordDao& operator=(WordDao&) = delete;
@@ -63,7 +64,7 @@ namespace grunwald {
         void init(Word& word);
 
         QSqlDatabase mDatabase;
-        QSqlQuery    mSqlQuery;
-        QSqlRecord   mSqlRecord;
+        QSqlQuery mSqlQuery;
+        QSqlRecord mSqlRecord;
     };
 }

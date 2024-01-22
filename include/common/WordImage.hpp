@@ -22,39 +22,44 @@
  * SOFTWARE.
  */
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QIcon>
+#pragma once
+
+#include <QMetaType>
 #include <QDebug>
+#include <QUrl>
 
-#if 1 /*ONLY FOR TESTING*/
-#include "net/DictionaryService.hpp"
-#endif
+namespace grunwald {
 
-int main(int argc, char *argv[]) {
-    QCoreApplication::setOrganizationName("kl");
-    QCoreApplication::setApplicationName("Grunwald");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
+    struct WordImage final {
+        Q_GADGET
 
-    QGuiApplication app(argc, argv);
-    app.setWindowIcon(QIcon(":/res/image/dict.png"));
+        Q_PROPERTY(qint64 id MEMBER id)
+        Q_PROPERTY(QUrl url MEMBER url)
+        Q_PROPERTY(qint32 width MEMBER width)
+        Q_PROPERTY(qint32 height MEMBER height)
+    public:
+        qint64 id{};
+        QUrl url;
+        qint32 width{};
+        qint32 height{};
+    };
 
-    QQmlApplicationEngine engine;
-    engine.addImportPath(":/qml");
-    engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
-
-    if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Load main.qml are failed!" << Qt::endl;
-        return -1;
+    inline bool operator==(const WordImage& left, const WordImage& right) {
+        return left.id == right.id && left.url == right.url &&
+               left.width == right.width && left.height == right.height;
     }
 
-#if 1 /*ONLY FOR TESTING*/
-    grunwald::DictionaryService service;
+    inline bool operator!=(const WordImage& left, const WordImage& right) {
+        return !(left == right);
+    }
 
-    service.getWordContent("Katze");
-#endif
-
-    return app.exec();
+    inline QDebug& operator<<(QDebug& debug, const WordImage& word) {
+        debug.nospace() << "["
+                        << word.id      << " ; "
+                        << word.url     << " ; "
+                        << word.width   << " ; "
+                        << word.height  << "]\n";
+        return debug.space();
+    }
 }
+Q_DECLARE_METATYPE(grunwald::WordImage)

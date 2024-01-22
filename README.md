@@ -8,9 +8,14 @@ The application searches online words with wiktionary REST API.
 Perform the following actions for building project:
 
 ```bash
-cmake --build . --target all
+cmake --build build/debug --target clean
+cmake --build build/debug --target all
 ```
+
+## Third party libraries:
+  * QGumboParser - html parser library <br/>
+  * QCoro - coroutine library <br/>
 
 ## Requirements
 C++20 <br/>
-Qt 6<br/>
+Qt 6 <br/>

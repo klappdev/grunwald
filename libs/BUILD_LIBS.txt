@@ -1,18 +1,44 @@
 
-QCumboParser library
-====================
+Build QCumboParser library:
+==========================
 1) Download and extract QCumboParser library.
 $ https://github.com/lagner/QGumboParser
 
 2) Download and extract gumbo-parser library in QCumboParser/gumbo-parser folder.
 $ https://github.com/google/gumbo-parser
 
-3) Install pro2cmake
+3) Install qmake2cmake
 $ https://www.qt.io/blog/introducing-qmake2cmake
 
-4) Comment last 3 lines in *.pro file.
+4) Comment last 5 lines in *.pro file.
 
-5) Convert qmake project file to cmake. Minimum python version is 3.7
-$ python3 pro2cmake.py QGumboParser.pro
+5) Convert qmake project file to cmake.
+$ ~/.local/bin/qmake2cmake QGumboParser.pro --min-qt-version 6.3
+
+6) Add extension methods in QGumboNode class
+    //XXX: Begin extension methods
+    QGumboNode getParent() {
+        GumboNode* parentNode = ptr_->parent;
+        Q_ASSERT(parentNode);
+
+        QGumboNode result(parentNode);
+        return result;
+    }
+
+    QGumboNode getParentNextNode() {
+        GumboNode* parentNode = ptr_->parent;
+        Q_ASSERT(parentNode);
+        Q_ASSERT(parentNode->type == GUMBO_NODE_ELEMENT);
+
+        GumboVector& childrenNodes = parentNode->v.element.children;
+        size_t currentNodeIndex = ptr_->index_within_parent;
+        Q_ASSERT(++currentNodeIndex < childrenNodes.length);
+
+        auto* nextNode = static_cast<GumboNode*>(childrenNodes.data[++currentNodeIndex]);
+        QGumboNode result(nextNode);
+
+        return result;
+    }
+    //XXX: End extension methods
 
 

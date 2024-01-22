@@ -45,12 +45,13 @@ namespace grunwald {
 
     void DictionaryService::getWordContent(const QString& name) {
         QNetworkRequest request;
+        mWordName = name;
 
         if (!checkInternetConnection()) {
-            const QString errorMessage = REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL);
-            qWarning() << TAG << errorMessage << Qt::endl;
+            const NetworkError networkError { REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL) };
+            qWarning() << TAG << networkError << Qt::endl;
 
-            emit wordProcessedError(errorMessage);
+            emit wordProcessedError(networkError);
             return;
         }
 
@@ -72,10 +73,10 @@ namespace grunwald {
         QNetworkRequest request;
 
         if (!checkInternetConnection()) {
-            const QString errorMessage = REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL);
-            qWarning() << TAG << errorMessage << Qt::endl;
+            const NetworkError networkError { REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL) };
+            qWarning() << TAG << networkError << Qt::endl;
 
-            emit wordProcessedError(errorMessage);
+            emit wordProcessedError(networkError);
             return;
         }
 
@@ -98,7 +99,7 @@ namespace grunwald {
         auto* reply = static_cast<QNetworkReply*>(sender());
 
         const QByteArray remoteData = reply->readAll();
-        const Result<Word, ParserError> wordResult = mWordParser.parseWordContent(remoteData);
+        const Result<Word, ParserError> wordResult = mWordParser.parseWordContent(mWordName, remoteData);
 
         const QNetworkReply::NetworkError replyError = reply->error();
 
@@ -112,7 +113,7 @@ namespace grunwald {
             if (replyError == QNetworkReply::ContentNotFoundError ||
                 replyError == QNetworkReply::ContentAccessDenied ||
                 replyError == QNetworkReply::ProtocolInvalidOperationError) {
-                emit wordProcessedError(reply->errorString());
+                emit wordProcessedError(NetworkError{ reply->errorString() });
             }
         }
 
@@ -138,7 +139,7 @@ namespace grunwald {
             if (replyError == QNetworkReply::ContentNotFoundError ||
                 replyError == QNetworkReply::ContentAccessDenied ||
                 replyError == QNetworkReply::ProtocolInvalidOperationError) {
-                emit wordProcessedError(reply->errorString());
+                emit wordProcessedError(NetworkError{ reply->errorString() });
             }
         }
 

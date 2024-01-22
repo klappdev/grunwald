@@ -146,8 +146,10 @@ namespace grunwald {
         mSqlQuery.addBindValue(word.date.toString(DATETIME_FORMAT));
 
         if (!mSqlQuery.exec()) {
-            qWarning() << TAG << "Add word error:  " << mSqlQuery.lastError();
-            return mSqlQuery.lastError().text();
+            const QSqlError sqlError = mSqlQuery.lastError();
+
+            qWarning() << TAG << "Add word error:  " << sqlError;
+            return DbError { sqlError.text() , static_cast<qint32>(sqlError.type()) };
         }
 
         return {};
@@ -174,8 +176,10 @@ namespace grunwald {
         mSqlQuery.addBindValue(word.id);
 
         if (!mSqlQuery.exec()) {
-            qWarning() << TAG << "Update word error:  " << mSqlQuery.lastError();
-            return mSqlQuery.lastError().text();
+            const QSqlError sqlError = mSqlQuery.lastError();
+
+            qWarning() << TAG << "Update word error:  " << sqlError;
+            return DbError { sqlError.text() , static_cast<qint32>(sqlError.type()) };
         }
 
         return {};
@@ -186,8 +190,10 @@ namespace grunwald {
         mSqlQuery.addBindValue(id);
 
         if (!mSqlQuery.exec()) {
-            qWarning() << TAG << "Delete word error:  " << mSqlQuery.lastError();
-            return mSqlQuery.lastError().text();
+            const QSqlError sqlError = mSqlQuery.lastError();
+
+            qWarning() << TAG << "Delete word error:  " << sqlError;
+            return DbError { sqlError.text() , static_cast<qint32>(sqlError.type()) };
         }
 
         return {};
@@ -200,8 +206,10 @@ namespace grunwald {
         mSqlQuery.addBindValue(id);
 
         if (!mSqlQuery.exec()) {
-           qWarning() << TAG << "Select word error: " << id << "," << mSqlQuery.lastError();
-           return mSqlQuery.lastError().text();
+            const QSqlError sqlError = mSqlQuery.lastError();
+
+            qWarning() << TAG << "Select word error: " << id << "," << sqlError;
+            return DbError { sqlError.text() , static_cast<qint32>(sqlError.type()) };
         }
 
         mSqlRecord = mSqlQuery.record();
@@ -218,8 +226,10 @@ namespace grunwald {
         Word word = {};
 
         if (!mSqlQuery.exec("SELECT * FROM word;")) {
-           qWarning() << TAG << "Select all word error: " << mSqlQuery.lastError() << Qt::endl;
-           return mSqlQuery.lastError().text();
+            const QSqlError sqlError = mSqlQuery.lastError();
+
+            qWarning() << TAG << "Select all word error: " << sqlError;
+            return DbError { sqlError.text() , static_cast<qint32>(sqlError.type()) };
         }
 
         mSqlRecord = mSqlQuery.record();
@@ -240,8 +250,10 @@ namespace grunwald {
         mSqlQuery.addBindValue("%" + name + "%");
 
         if (!mSqlQuery.exec()) {
-           qWarning() << "Search words error: " << mSqlQuery.lastError() << Qt::endl;
-           return mSqlQuery.lastError().text();
+            const QSqlError sqlError = mSqlQuery.lastError();
+
+            qWarning() << TAG << "Search words error: " << sqlError;
+            return DbError { sqlError.text() , static_cast<qint32>(sqlError.type()) };
         }
 
         mSqlRecord = mSqlQuery.record();
@@ -264,8 +276,10 @@ namespace grunwald {
         mSqlQuery.addBindValue(ascending);
 
         if (!mSqlQuery.exec()) {
-           qWarning() << TAG << "sort words error: " << mSqlQuery.lastError() << Qt::endl;
-           return mSqlQuery.lastError().text();
+            const QSqlError sqlError = mSqlQuery.lastError();
+
+            qWarning() << TAG << "Sort words error: " << sqlError;
+            return DbError { sqlError.text() , static_cast<qint32>(sqlError.type()) };
         }
 
         mSqlRecord = mSqlQuery.record();

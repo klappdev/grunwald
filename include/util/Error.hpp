@@ -22,39 +22,38 @@
  * SOFTWARE.
  */
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QIcon>
+#pragma once
+
 #include <QDebug>
+#include <QString>
 
-#if 1 /*ONLY FOR TESTING*/
-#include "net/DictionaryService.hpp"
-#endif
+namespace grunwald {
 
-int main(int argc, char *argv[]) {
-    QCoreApplication::setOrganizationName("kl");
-    QCoreApplication::setApplicationName("Grunwald");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
+    class Error final {
+    public:
+        explicit Error(const QString& message) : Error(message, -1) {}
+        Error(const QString& message, qint32 code) : mMessage(message), mCode(code) {}
+        ~Error() = default;
 
-    QGuiApplication app(argc, argv);
-    app.setWindowIcon(QIcon(":/res/image/dict.png"));
+        auto getMessage() const -> QString { return mMessage; }
+        auto getCode() const -> qint32 { return mCode; }
 
-    QQmlApplicationEngine engine;
-    engine.addImportPath(":/qml");
-    engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
+    private:
+        QString mMessage;
+        qint32 mCode;
+    };
 
-    if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Load main.qml are failed!" << Qt::endl;
-        return -1;
+    inline QDebug& operator<<(QDebug& debug, const Error& error) {
+        debug.nospace() << "Error {";
+
+        if (error.getCode() != -1) {
+            debug << error.getMessage() << "," << error.getCode();
+        } else {
+            debug << error.getMessage();
+        }
+
+        debug << "}" << Qt::endl;
+
+        return debug.space();
     }
-
-#if 1 /*ONLY FOR TESTING*/
-    grunwald::DictionaryService service;
-
-    service.getWordContent("Katze");
-#endif
-
-    return app.exec();
 }

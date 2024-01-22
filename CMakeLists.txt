@@ -21,12 +21,16 @@ find_package(Qt6 REQUIRED COMPONENTS
 
 set(HEADERS
     include/common/Word.hpp
+    include/common/WordType.hpp
+    include/common/WordImage.hpp
 
     include/db/WordDao.hpp
     include/net/WordParser.hpp
     include/net/DictionaryService.hpp
 
+    include/util/Error.hpp
     include/util/Result.hpp
+    include/util/EnumUtil.hpp
 )
 
 set(SOURCES
@@ -48,6 +52,13 @@ set(QML_IMPORT_PATH ${QML_IMPORT_PATH}
     FORCE
 )
 
+set(QGUMBO_PARSER_SRC libs/QGumboParser)
+set(LIBQGUMBO_PARSER_PATH ${CMAKE_BINARY_DIR}/libs/QGumboParser/libQGumboParser.so)
+
+#add_subdirectory(${QGUMBO_PARSER_SRC})
+add_library(QGumboParser SHARED IMPORTED)
+set_target_properties(QGumboParser PROPERTIES IMPORTED_LOCATION ${LIBQGUMBO_PARSER_PATH})
+
 add_executable(${PROJECT_NAME}
     ${HEADERS}
     ${SOURCES}
@@ -56,6 +67,7 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/${QGUMBO_PARSER_SRC}
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -63,4 +75,6 @@ target_link_libraries(${PROJECT_NAME}
     Qt6::Sql
     Qt6::Network
     Qt6::Quick
+
+    QGumboParser
 )

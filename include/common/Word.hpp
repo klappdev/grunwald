@@ -29,6 +29,9 @@
 #include <QString>
 #include <QDateTime>
 
+#include "WordType.hpp"
+#include "WordImage.hpp"
+
 namespace grunwald {
 
     struct Word final {
@@ -41,6 +44,8 @@ namespace grunwald {
         Q_PROPERTY(QString association MEMBER association)
         Q_PROPERTY(QString etymology MEMBER etymology)
         Q_PROPERTY(QString description MEMBER description)
+        Q_PROPERTY(WordType type MEMBER type)
+        Q_PROPERTY(WordImage image MEMBER image)
         Q_PROPERTY(QDateTime date MEMBER date)
     public:
         qint64 id {};
@@ -50,6 +55,8 @@ namespace grunwald {
         QString association;
         QString etymology;
         QString description;
+        WordType type;
+        WordImage image;
         QDateTime date;
     };
 
@@ -62,6 +69,8 @@ namespace grunwald {
                         << word.association     << " ; "
                         << word.etymology       << " ; "
                         << word.description     << " ; "
+                        << word.type            << " ; "
+                        << word.image           << " ; "
                         << word.date            << "]\n";
         return debug.space();
     }

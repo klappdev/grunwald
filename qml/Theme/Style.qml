@@ -51,7 +51,7 @@ QtObject {
     readonly property int mediumSpacing: 10
     readonly property int smallSpacing: 5
 
-    function rgb(/* int */ r, /* int */g, /* int */b, /* int */a) {
+    function rgb(r: int, g: int, b: int, a: int): int {
         return "#"
              + (a ? a.toString(16).padStart(2, "0") : "")
              + r.toString(16).padStart(2, "0")
