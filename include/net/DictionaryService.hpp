@@ -45,14 +45,14 @@ namespace grunwald {
         DictionaryService(QObject* parent = nullptr);
         ~DictionaryService();
 
-        void getWordContent(const QString& name);
+        Q_INVOKABLE void getWordContent(const QString& name);
         void getWordImage(const QString& name);
 
     signals:
-        void wordContentProcessed(const Word&);
-        void wordImageProcessed(const QUrl&);
+        void wordContentProcessed(const Word& word);
+        void wordImageProcessed(const QUrl& imageUrl);
 
-        void wordProcessedError(const NetworkError&);
+        void wordProcessedError(const QString& error);
 
     private slots:
         void handleWordContentRequest();

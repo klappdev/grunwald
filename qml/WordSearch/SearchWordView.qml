@@ -25,6 +25,9 @@
 import QtQuick 2.9
 import QtQuick.Window 2.2
 import QtQuick.Controls 2.2
+import QtQuick.Dialogs 6.6
+
+import grunwald.DictionaryService 1.0
 
 import Theme 1.0
 
@@ -34,6 +37,25 @@ Rectangle {
     border {
         color: "lightgrey"
         width: 1
+    }
+
+    MessageDialog {
+        id: wordErrorDialog
+        modality: Qt.ApplicationModal //Qt.WindowModal
+        buttons: MessageDialog.Ok
+        title: "Search word error"
+    }
+
+    Component.onCompleted: {
+
+        DictionaryService.wordProcessedError.connect(function(error) {
+            var message = `Network error: ${error}`
+
+            wordErrorDialog.text = message
+            wordErrorDialog.open()
+
+            console.log(message)
+        })
     }
 
     TextField {
@@ -102,7 +124,7 @@ Rectangle {
 
         background: Rectangle {
             radius: 4
-            color: Style.primaryColor
+            color: parent.down ? Style.primaryColor : (parent.hovered ? Style.hoveredColor : Style.primaryColor)
 
             border {
                 color: "lightgrey"
@@ -111,7 +133,20 @@ Rectangle {
         }
 
         onClicked: {
-            console.info("Click search button: ")
+            var nameWord = searchTextEdit.text
+
+            if (!!nameWord) {
+                DictionaryService.getWordContent(nameWord);
+
+                console.info(`Click search button: ${nameWord}`)
+            } else {
+                var message = "Click search button, empty string"
+
+                wordErrorDialog.text = message
+                wordErrorDialog.open()
+
+                console.warn(message)
+            }
         }
     }
 }

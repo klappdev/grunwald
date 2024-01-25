@@ -51,7 +51,7 @@ namespace grunwald {
             const NetworkError networkError { REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL) };
             qWarning() << TAG << networkError << Qt::endl;
 
-            emit wordProcessedError(networkError);
+            emit wordProcessedError(networkError.getMessage());
             return;
         }
 
@@ -76,7 +76,7 @@ namespace grunwald {
             const NetworkError networkError { REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL) };
             qWarning() << TAG << networkError << Qt::endl;
 
-            emit wordProcessedError(networkError);
+            emit wordProcessedError(networkError.getMessage());
             return;
         }
 
@@ -113,7 +113,7 @@ namespace grunwald {
             if (replyError == QNetworkReply::ContentNotFoundError ||
                 replyError == QNetworkReply::ContentAccessDenied ||
                 replyError == QNetworkReply::ProtocolInvalidOperationError) {
-                emit wordProcessedError(NetworkError{ reply->errorString() });
+                emit wordProcessedError(reply->errorString());
             }
         }
 
@@ -139,7 +139,7 @@ namespace grunwald {
             if (replyError == QNetworkReply::ContentNotFoundError ||
                 replyError == QNetworkReply::ContentAccessDenied ||
                 replyError == QNetworkReply::ProtocolInvalidOperationError) {
-                emit wordProcessedError(NetworkError{ reply->errorString() });
+                emit wordProcessedError(reply->errorString());
             }
         }
 

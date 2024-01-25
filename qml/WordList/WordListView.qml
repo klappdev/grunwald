@@ -26,26 +26,35 @@ import QtQuick 2.9
 import QtQuick.Window 2.2
 import QtQuick.Controls 2.2
 
+import grunwald.WordModel 1.0
+import grunwald.DictionaryService 1.0
+import grunwald.Word 1.0
+
 import Theme 1.0
 
 ListView {
     id: root
+
+    property remoteWord selectedWord
+
+    Component.onCompleted: {
+        DictionaryService.wordContentProcessed.connect(function(word) {
+            console.log(`Remote word: ${word.name}`)
+
+            wordModel.storeWord(word)
+
+            root.selectedWord = word
+        })
+    }
+
     spacing: 1
     section.criteria: ViewSection.FirstCharacter
     section.property: "name"
 
-    model: ListModel { //FIXME: temporary static model
+    WordModel {
         id: wordModel
-
-        ListElement {
-           nameWord: "katze"
-           dateWord: "01.01.2020"
-        }
-        ListElement {
-           nameWord: "hunt"
-           dateWord: "01.01.2020"
-        }
     }
+    model: wordModel
 
     delegate: WordDelegate {
         width: root.width

@@ -28,6 +28,8 @@ set(HEADERS
     include/net/WordParser.hpp
     include/net/DictionaryService.hpp
 
+    include/model/WordModel.hpp
+
     include/util/Error.hpp
     include/util/Result.hpp
     include/util/EnumUtil.hpp
@@ -39,6 +41,8 @@ set(SOURCES
     src/db/WordDao.cpp
     src/net/WordParser.cpp
     src/net/DictionaryService.cpp
+
+    src/model/WordModel.cpp
 )
 
 set(RESOURCES

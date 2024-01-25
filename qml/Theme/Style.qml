@@ -32,6 +32,7 @@ QtObject {
     readonly property color primaryVariantColor: "#3700B3"
     readonly property color secondaryColor: isDarkTheme ? "#3c3c3c" : "#ebebeb"
     readonly property color secondaryVariant: isDarkTheme ? "#018786" : secondaryColor
+    readonly property color hoveredColor: isDarkTheme ? "#BB86FC" : "#286090"
     readonly property color backgroundColor: isDarkTheme ? "#121212" : "#FFFFFF"
     readonly property color errorColor: isDarkTheme ? "#CF6679" : "#B00020"
     readonly property color textColor: isDarkTheme ? "#FFFFFF" : "#000000"

@@ -27,9 +27,8 @@
 #include <QIcon>
 #include <QDebug>
 
-#if 1 /*ONLY FOR TESTING*/
 #include "net/DictionaryService.hpp"
-#endif
+#include "model/WordModel.hpp"
 
 int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationName("kl");
@@ -41,6 +40,12 @@ int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/res/image/dict.png"));
 
+    QScopedPointer<grunwald::DictionaryService> dictionaryService(new grunwald::DictionaryService{});
+
+    qmlRegisterSingletonInstance("grunwald.DictionaryService", 1, 0, "DictionaryService", dictionaryService.get());
+    qmlRegisterType<grunwald::WordModel>("grunwald.WordModel", 1, 0, "WordModel");
+    qmlRegisterType<grunwald::Word>("grunwald.Word", 1, 0, "remoteWord");
+
     QQmlApplicationEngine engine;
     engine.addImportPath(":/qml");
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
@@ -49,12 +54,6 @@ int main(int argc, char *argv[]) {
         qCritical() << "Load main.qml are failed!" << Qt::endl;
         return -1;
     }
-
-#if 1 /*ONLY FOR TESTING*/
-    grunwald::DictionaryService service;
-
-    service.getWordContent("Katze");
-#endif
 
     return app.exec();
 }

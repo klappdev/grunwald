@@ -24,12 +24,28 @@
 
 #include "model/WordModel.hpp"
 
-static constexpr const char* const TAG =  "[WordModel] ";
+static constexpr const char* const TAG = "[WordModel] ";
+static constexpr const char* const DATETIME_FORMAT = "dd.MM.yyyy HH:mm:ss";
 
 namespace grunwald {
 
     WordModel::WordModel(QObject* parent)
         : QAbstractListModel(parent) {
+
+        if (mWords.isEmpty()) {
+            mWords.append(Word{
+                .id = -1,
+                .name = tr("No words"),
+                .transcription = tr("<empty>"),
+                .translation = tr("<empty>"),
+                .association = tr("<empty>"),
+                .etymology = tr("<empty>"),
+                .description = tr("<empty>"),
+                .type = WordType::Unknown,
+                .image = WordImage{},
+                .date = QDateTime::currentDateTime()
+            });
+        }
     }
 
     WordModel::~WordModel() {}
@@ -46,15 +62,32 @@ namespace grunwald {
             return value;
         }
 
-
         const Word& word = mWords.at(index.row());
 
         switch (role) {
             case WordRoles::NameRole: {
                 return QVariant::fromValue(word.name);
             }
+            case WordRoles::TranscriptionRole: {
+                return QVariant::fromValue(word.transcription);
+            }
+            case WordRoles::TranslationRole: {
+                return QVariant::fromValue(word.translation);
+            }
+            case WordRoles::AssociationRole: {
+                return QVariant::fromValue(word.association);
+            }
+            case WordRoles::EtymologyRole: {
+                return QVariant::fromValue(word.etymology);
+            }
+            case WordRoles::DescriptionRole: {
+                return QVariant::fromValue(word.description);
+            }
+            case WordRoles::WordTypeRole: {
+                return QVariant::fromValue(word.type);
+            }
             case WordRoles::DateRole: {
-                return QVariant::fromValue(word.date);
+                return QVariant::fromValue(word.date.toString(DATETIME_FORMAT));
             }
             default: {
                 qWarning() << TAG << "Index is not valied: [" << index.column() << ":" << index.row() << "]";
@@ -68,20 +101,50 @@ namespace grunwald {
     QHash<int, QByteArray> WordModel::roleNames() const {
         QHash<int, QByteArray> roles;
         roles[WordRoles::NameRole] = "name";
+        roles[WordRoles::TranscriptionRole] = "transcription";
+        roles[WordRoles::TranslationRole] = "translation";
+        roles[WordRoles::AssociationRole] = "association";
+        roles[WordRoles::EtymologyRole] = "etymology";
+        roles[WordRoles::DescriptionRole] = "description";
+        roles[WordRoles::WordTypeRole] = "type";
         roles[WordRoles::DateRole] = "date";
 
         return roles;
     }
 
-    void WordModel::setWords(QList<Word>&& list) {
+    void WordModel::storeWord(const Word& word) {
         emit beginResetModel();
-        mWords = std::move(list);
+        mWords.clear();
+        mWords.insert(0, word);
         emit endResetModel();
 
-        qDebug() << "Update word model" << rowCount() << " success!";
+        qDebug() << TAG << "Update word model" << rowCount() << " success!";
     }
 
-    const QList<Word>& WordModel::getWords() const {
-        return mWords;
+    void WordModel::storeWords(const QList<Word>& list) {
+        emit beginResetModel();
+        mWords.clear();
+        mWords.append(list);
+        emit endResetModel();
+
+        qDebug() << TAG << "Update word model" << rowCount() << " success!";
+    }
+
+    void WordModel::removeWord(int index) {
+        if (index < 0 || index >= mWords.count()) {
+            return;
+        }
+
+        emit beginRemoveRows(QModelIndex(), index, index);
+        mWords.removeAt(index);
+        emit endRemoveRows();
+    }
+
+    Word WordModel::getWord(int index) const {
+        if (index < 0 || index >= mWords.count()) {
+            return Word{};
+        }
+
+        return mWords.at(index);
     }
 }

@@ -27,13 +27,13 @@
 static constexpr const char* const TAG = "[WordDao] ";
 static constexpr const char* const DB_NAME = "grunwald";
 static constexpr const char* const DB_FILE = "grunwald.sqlite";
-static constexpr const char* const DATETIME_FORMAT = "HH:mm:ss dd.MM.yyyy";
+static constexpr const char* const DATETIME_FORMAT = "dd.MM.yyyy HH:mm:ss";
 
 namespace grunwald {
 
     WordDao::WordDao()
         : mDatabase(createConnection())
-        , mSqlQuery(QSqlQuery(mDatabase))
+        , mSqlQuery(QSqlQuery{mDatabase})
         , mSqlRecord(mSqlQuery.record()) {
         createTable();
     }
@@ -62,12 +62,14 @@ namespace grunwald {
             qInfo() << TAG << "DB connected!" << Qt::endl;
         }
 
-        database.exec("PRAGMA locking_mode = EXCLUSIVE");
-
         return database;
     }
 
     void WordDao::createTable() {
+        if (!mSqlQuery.exec("PRAGMA locking_mode = EXCLUSIVE")) {
+            qWarning() << TAG << "Database could not set locking mode!" << mDatabase.lastError() << Qt::endl;
+        }
+
         if (!mSqlQuery.exec(R"xxx(CREATE TABLE IF NOT EXISTS word (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     name TEXT NOT NULL,

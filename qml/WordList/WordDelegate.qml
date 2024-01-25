@@ -54,7 +54,7 @@ Rectangle {
         }
 
         Text {
-            text: nameWord
+            text: model.name
             color: Style.textColor
             font {
                 pointSize: 13
@@ -62,7 +62,7 @@ Rectangle {
             }
         }
         Text {
-            text: dateWord
+            text: model.date
             color: Style.primaryColor
             font {
                 pointSize: 13

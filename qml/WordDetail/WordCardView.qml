@@ -22,7 +22,8 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.9
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 
 import Commons 1.0
 import Theme 1.0
@@ -72,28 +73,61 @@ Rectangle {
         }
     }
 
-    Text {
-        id: contentText
-        width: parent.width
-        height: parent.height * 2 / 3
-        text: contentCard
-        color: Style.textColor
-        font {
-            pointSize: 12
-            family: "Roboto Regular"
-        }
-        wrapMode: Text.Wrap
-
+    Flickable {
+        id: flickable
+        contentHeight: contentText.implicitHeight
+        contentWidth: contentText.implicitWidth
+        //contentY: contentHeight - height
+        boundsMovement: Flickable.StopAtBounds
         anchors {
-            left: parent.left
-            right: parent.right
+            left: root.left
+            right: root.right
             top: titleRectangle.bottom
-            bottom: parent.bottom
+            bottom: root.bottom
 
             leftMargin: Style.mediumSpacing
             rightMargin: Style.mediumSpacing
             topMargin: Style.mediumSpacing
             bottomMargin: Style.mediumSpacing
+        }
+        clip: true
+
+        Text {
+            id: contentText
+            width: root.width
+            height: root.height * 2 / 3
+            text: contentCard
+            color: Style.textColor
+            font {
+                pointSize: 12
+                family: "Roboto Regular"
+            }
+            wrapMode: Text.Wrap
+        }
+
+        ScrollBar.vertical: ScrollBar {
+            id: verticalScrollBar
+            active: hovered || pressed
+            orientation: Qt.Vertical
+            position: 0.0
+            parent: flickable.parent
+            anchors {
+                top: flickable.top
+                right: flickable.right
+                bottom: flickable.bottom
+            }
+        }
+
+        ScrollBar.horizontal: ScrollBar {
+            id: horizontalScrollBar
+            active: hovered || pressed
+            orientation: Qt.Horizontal
+            parent: flickable.parent
+            anchors {
+                left: flickable.left
+                right: flickable.right
+                bottom: flickable.bottom
+            }
         }
     }
 }

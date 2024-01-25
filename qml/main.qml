@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.9
-import QtQuick.Window 2.2
-import QtQuick.Controls 2.2
+import QtQuick 2.15
+import QtQuick.Window 2.15
+import QtQuick.Controls 2.15
 
 import WordSearch 1.0
 import WordList 1.0
@@ -36,6 +36,7 @@ ApplicationWindow {
     width: 1080
     height: 840
     title: qsTr("Grunwald")
+    color: Style.backgroundColor
 
     SearchWordView {
         id: searchWordView
@@ -60,10 +61,17 @@ ApplicationWindow {
             top: searchWordView.bottom
             bottom: parent.bottom
 
-            leftMargin: Style.mediumSpacing
-            rightMargin: Style.smallSpacing
-            topMargin: Style.smallSpacing
-            bottomMargin: Style.smallSpacing
+            margins: 2
+        }
+        onSelectedWordChanged: {
+            wordDetailView.nameWord = selectedWord.name
+            wordDetailView.translationWord = selectedWord.translation
+            wordDetailView.transcriptionWord = selectedWord.transcription
+            wordDetailView.associationWord = selectedWord.association
+            wordDetailView.etymologyWord = selectedWord.etymology
+            wordDetailView.descriptionWord = selectedWord.description
+
+            console.log(`Selected word changed: ${selectedWord.name}`)
         }
     }
 
@@ -78,10 +86,7 @@ ApplicationWindow {
             top: searchWordView.bottom
             bottom: parent.bottom
 
-            leftMargin: Style.smallSpacing
-            rightMargin: Style.smallSpacing
-            topMargin: Style.smallSpacing
-            bottomMargin: Style.smallSpacing
+            margins: 2
         }
     }
 }

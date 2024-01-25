@@ -30,8 +30,8 @@ Column {
     id: root
     spacing: Style.mediumOffset
 
-    property string nameWord
-    property string transcriptionWord
+    property string nameWord: "<empty>"
+    property string transcriptionWord: "[empty]"
 
     Text {
         id: nameText

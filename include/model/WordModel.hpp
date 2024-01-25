@@ -33,7 +33,7 @@
 
 namespace grunwald {
 
-    class WordModel final : public QAbstractListModel {
+    class WordModel : public QAbstractListModel {
         Q_OBJECT
     public:
         explicit WordModel(QObject* parent = nullptr);
@@ -44,12 +44,21 @@ namespace grunwald {
 
         QHash<int, QByteArray> roleNames() const override;
 
-        void setWords(QList<Word>&& list);
-        const QList<Word>& getWords() const;
+        Q_INVOKABLE void storeWord(const Word& word);
+        Q_INVOKABLE void storeWords(const QList<Word>& list);
+
+        Q_INVOKABLE void removeWord(int index);
+        Q_INVOKABLE Word getWord(int index) const;
 
     private:
-        enum class WordRoles {
+        enum WordRoles {
             NameRole = Qt::UserRole + 1,
+            TranscriptionRole,
+            TranslationRole,
+            AssociationRole,
+            EtymologyRole,
+            DescriptionRole,
+            WordTypeRole,
             DateRole
         };
 

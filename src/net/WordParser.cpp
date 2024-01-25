@@ -223,7 +223,7 @@ namespace grunwald {
 
         QString descriptionText;
         if (wordTypeOption) {
-            const auto descriptionText = parseDescriptionWord(wordTypeText, rootNode);
+            descriptionText = parseDescriptionWord(wordTypeText, rootNode);
         }
         const auto associationText = parseAssociationWord(rootNode);
 

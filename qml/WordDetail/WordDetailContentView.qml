@@ -30,10 +30,10 @@ Column {
     id: root
     spacing: Style.mediumOffset
 
-    property string translationWord: ""
-    property string associationWord: ""
-    property string etymologyWord: ""
-    property string descriptionWord: ""
+    property string translationWord: "<empty>"
+    property string associationWord: "<empty>"
+    property string etymologyWord: "<empty>"
+    property string descriptionWord: "<empty>"
 
     WordCardView {
         id: translationWordCard

@@ -30,6 +30,15 @@ import Theme 1.0
 
 Rectangle {
     id: root
+
+    property alias nameWord: wordDetailHeaderView.nameWord
+    property alias translationWord: wordDetailContentView.translationWord
+    property alias transcriptionWord: wordDetailHeaderView.transcriptionWord
+
+    property alias associationWord: wordDetailContentView.associationWord
+    property alias etymologyWord: wordDetailContentView.etymologyWord
+    property alias descriptionWord: wordDetailContentView.descriptionWord
+
     color: Style.backgroundColor
     border {
         color: "lightgrey"
@@ -40,8 +49,6 @@ Rectangle {
         id: wordDetailHeaderView
         width: parent.width
         height: parent.height * 1 / 8
-        nameWord: "Katze"                                //FIXME: use from model item
-        transcriptionWord: "Transcription: " + " /ˈkatsə/" //FIXME: use from model item
 
         anchors {
             left: parent.left
@@ -70,11 +77,6 @@ Rectangle {
         id: wordDetailContentView
         width: parent.width
         //height: parent.height * 6 / 8
-
-        translationWord: "cat"                              //FIXME: use from model item
-        associationWord: "Katze f (genitive Katze, plural Katzen, diminutive Kätzchen n or Kätzlein n, masculine männliche Katze or Kater, feminine weibliche Katze or Kätzin or Katerin)"                              //FIXME: use from model item
-        etymologyWord: "From Middle High German katze, Old High German kazza, from Proto-West Germanic *kattā, from Late Latin catta, feminine of cattus. Akin to Old English catt (“cat”)."                                  //FIXME: use from model item
-        descriptionWord: "Katze is the common term to refer to a cat (both male and female ones). The derived form Kätzin is mostly restricted to poetic language and technical language."                                //FIXME: use from model item
 
         anchors {
             left: parent.left
