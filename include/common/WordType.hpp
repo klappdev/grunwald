@@ -44,4 +44,4 @@ namespace grunwald {
     };
     Q_ENUM_NS(WordType)
 }
-//Q_DECLARE_METATYPE(grunwald::WordType)
+Q_DECLARE_METATYPE(grunwald::WordType)

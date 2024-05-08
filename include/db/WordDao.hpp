@@ -33,38 +33,34 @@
 namespace grunwald {
     using DbError = Error;
 
-    class WordDao final { //FIXME: extends to work with WordType, WordImage
+    class WordDao final {
     public:
-        WordDao(const WordDao&) = delete;
-        WordDao& operator=(WordDao&) = delete;
-
-        static auto getInstance() -> WordDao&;
-
-        void reset();
-
-        bool checkIfExists(const Word& word);
-
-        auto add(const Word& word) -> Result<void, DbError>;
-        auto update(const Word& word) -> Result<void, DbError>;
-        auto remove(qint32 id) -> Result<void, DbError>;
-
-        auto get(qint32 id) -> Result<Word, DbError>;
-        auto getAll() -> Result<QVector<Word>, DbError>;
-
-        auto search(const QString& text) -> Result<QVector<Word>, DbError>;
-        auto sort(bool asc) -> Result<QVector<Word>, DbError>;
-
-    private:
         WordDao();
         ~WordDao();
 
-        auto createConnection() -> QSqlDatabase;
-        void createTable();
+        WordDao(const WordDao&) = delete;
+        WordDao& operator=(WordDao&) = delete;
 
-        void init(Word& word);
+        void reset();
+        bool checkIfExists(const QString& name);
+
+        auto add(const Word& word) -> Result<void, DbError>;
+        auto update(const Word& word) -> Result<void, DbError>;
+        auto remove(const Word& word) -> Result<void, DbError>;
+
+        auto get(qint32 id) -> Result<Word, DbError>;
+        auto getAll() -> Result<QVector<Word>, DbError>;
+        auto search(const QString& name) -> Result<QVector<Word>, DbError>;
+
+    private:
+        auto openDatabase() -> QSqlDatabase;
+        void closeDatabase();
+        void createTables();
+
+        auto prepareWord() -> Word;
 
         QSqlDatabase mDatabase;
-        QSqlQuery mSqlQuery;
-        QSqlRecord mSqlRecord;
+        QSqlQuery    mSqlQuery;
+        QSqlRecord   mSqlRecord;
     };
 }

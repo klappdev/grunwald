@@ -24,48 +24,40 @@
 
 #pragma once
 
-#include <QtVersionChecks>
+#include <QAtomicPointer>
 
-#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
-#include <QNetworkConfigurationManager>
-#endif
-#include <QNetworkAccessManager>
-#include <QUrl>
-
-#include "net/WordParser.hpp"
-#include "common/Word.hpp"
-#include "util/Error.hpp"
+#include "db/WordDao.hpp"
+#include "net/WordService.hpp"
 
 namespace grunwald {
-    using NetworkError = Error;
 
-    class DictionaryService final : public QObject {
+    class WordStorage final : public QObject {
         Q_OBJECT
     public:
-        DictionaryService(QObject* parent = nullptr);
-        ~DictionaryService();
+        WordStorage(QObject* parent = nullptr);
+        ~WordStorage();
 
-        Q_INVOKABLE void getWordContent(const QString& name);
-        void getWordImage(const QString& name);
+        Q_INVOKABLE void preloadWords();
+        Q_INVOKABLE void searchWord(const QString& name);
+
+        Q_INVOKABLE void insertWord();
+        Q_INVOKABLE void removeWord();
+
+        Q_INVOKABLE bool isWordCached(const QString& name);
 
     signals:
-        void wordContentProcessed(const Word& word);
-        void wordImageProcessed(const QUrl& imageUrl);
+        void wordProcessed(const Word& word);
+        void localWordsPrecessed(const QVariant& words);
 
-        void wordProcessedError(const QString& error);
-
-    private slots:
-        void handleWordContentRequest();
-        void handleWordImageRequest();
+        void wordError(const QString& error);
 
     private:
-        bool checkInternetConnection();
+        void updateCurrentWord(const Word& newWord);
+        auto prepareWords(const QList<Word>& words) -> QVariantList;
 
-        QNetworkAccessManager mNetworkManager;
-#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
-        QNetworkConfigurationManager mNetworkConfigurationManager;
-#endif
-        WordParser mWordParser;
-        QString mWordName;
+        QAtomicPointer<Word> mCurrentWord;
+
+        WordDao mWordDao;
+        WordService mWordService;
     };
 }

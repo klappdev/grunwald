@@ -37,11 +37,15 @@ namespace grunwald {
         Q_PROPERTY(QUrl url MEMBER url)
         Q_PROPERTY(qint32 width MEMBER width)
         Q_PROPERTY(qint32 height MEMBER height)
+        Q_PROPERTY(QByteArray data MEMBER data)
     public:
         qint64 id{};
         QUrl url;
         qint32 width{};
         qint32 height{};
+        QByteArray data;
+
+        WordImage& operator=(const WordImage&) = default;
     };
 
     inline bool operator==(const WordImage& left, const WordImage& right) {

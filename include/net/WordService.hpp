@@ -24,29 +24,48 @@
 
 #pragma once
 
-#include <QMetaEnum>
-#include <QString>
+#include <QtVersionChecks>
 
-namespace grunwald::EnumUtil {
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
+#include <QNetworkConfigurationManager>
+#endif
+#include <QNetworkAccessManager>
+#include <QUrl>
 
-    template<typename E>
-        requires std::is_enum_v<E>
-    auto fromString(const QString& name) -> std::optional<E> {
-        bool ok = false;
-        auto result = static_cast<E>(QMetaEnum::fromType<E>().keyToValue(name.toUtf8(), &ok));
+#include "net/WordParser.hpp"
+#include "common/Word.hpp"
+#include "util/Error.hpp"
 
-        if (!ok) {
-            return std::nullopt;
-        } else {
-            return result;
-        }
-    }
+namespace grunwald {
+    using NetworkError = Error;
 
-    template<typename E>
-        requires std::is_enum_v<E>
-    auto toString(E value) -> QString {
-        const int result = static_cast<int>(value);
+    class WordService final : public QObject {
+        Q_OBJECT
+    public:
+        WordService(QObject* parent = nullptr);
+        ~WordService();
 
-        return QString::fromUtf8(QMetaEnum::fromType<E>().valueToKey(result));
-    }
+        void fetchWordContent(const QString& name);
+        void fetchWordImage(const QString& name);
+
+    signals:
+        void wordContentProcessed(const Word& word);
+        void wordImageProcessed(const QUrl& imageUrl);
+
+        void wordProcessedError(const QString& error);
+
+    private slots:
+        void handleWordContentRequest();
+        void handleWordImageRequest();
+
+    private:
+        bool checkInternetConnection();
+
+        QNetworkAccessManager mNetworkManager;
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
+        QNetworkConfigurationManager mNetworkConfigurationManager;
+#endif
+        WordParser mWordParser;
+        QString mWordName;
+    };
 }

@@ -24,6 +24,9 @@
 
 import QtQuick 2.9
 import QtQuick.Controls 2.2
+import QtQuick.Dialogs 6.6
+
+import grunwald.WordStorage 1.0
 
 import Theme 1.0
 
@@ -31,6 +34,13 @@ Row {
     id: root
     spacing: Style.mediumOffset
     anchors.margins: Style.mediumOffset
+
+    MessageDialog {
+        id: saveWordDialog
+        modality: Qt.ApplicationModal //Qt.WindowModal
+        buttons: MessageDialog.Ok
+        title: "Save word"
+    }
 
     RoundButton {
         id: saveButton
@@ -68,7 +78,7 @@ Row {
         background: Rectangle {
             height: parent.height
             radius: 20
-            color: Style.themeDefaultColor
+            color: parent.down ? Style.themeDefaultColor : (parent.hovered ? Style.hoveredColor : Style.themeDefaultColor)
 
             border {
                 color: "lightgrey"
@@ -77,7 +87,23 @@ Row {
         }
 
         onClicked: {
-            console.info("Click save button: ")
+            var nameWord = wordDetailHeaderView.nameWord
+
+            if (WordStorage.isWordCached(nameWord)) {
+                WordStorage.removeWord()
+
+                var notSaveWordMessage = `Remove word: ${nameWord}`
+                saveWordDialog.text = notSaveWordMessage
+            } else {
+                WordStorage.insertWord()
+
+                var saveWordMessage = `Save word: ${nameWord}`
+                saveWordDialog.text = saveWordMessage
+            }
+
+            saveWordDialog.open()
+
+            console.info(`Click save button: ${nameWord}`)
         }
     }
 
@@ -117,7 +143,7 @@ Row {
         background: Rectangle {
             height: parent.height
             radius: 20
-            color: Style.themeDefaultColor
+            color: parent.down ? Style.themeDefaultColor : (parent.hovered ? Style.hoveredColor : Style.themeDefaultColor)
 
             border {
                 color: "lightgrey"
@@ -126,7 +152,7 @@ Row {
         }
 
         onClicked: {
-            console.info("Click share button: ")
+            console.info("Click share button!")
         }
     }
 }

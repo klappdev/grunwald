@@ -35,7 +35,7 @@
 # error "Couldn't find QGumboParser header files"
 #endif
 
-#include "util/EnumUtil.hpp"
+#include "util/EnumHelper.hpp"
 
 static constexpr const char* const TAG = "[WordParser] ";
 static constexpr const char* const DEFAULT_LANGUAGE = "German";  //FIXME: better to use constant or load from settings
@@ -218,7 +218,7 @@ namespace grunwald {
         const auto translationText = parseTranslationWord(rootNode);
 
         const auto wordTypeText = parseTypeWord(rootNode);
-        const auto wordTypeOption = EnumUtil::fromString<WordType>(wordTypeText);
+        const auto wordTypeOption = EnumHelper::fromString<WordType>(wordTypeText);
         const auto wordType = wordTypeOption ? *wordTypeOption : WordType::Unknown;
 
         QString descriptionText;

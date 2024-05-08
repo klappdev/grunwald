@@ -58,6 +58,12 @@ namespace grunwald {
         WordType type;
         WordImage image;
         QDateTime date;
+
+        Word& operator=(const Word&) = default;
+
+        Q_INVOKABLE bool hasImage() const {
+            return type == WordType::Noun && !image.url.isEmpty() && !image.data.isEmpty();
+        }
     };
 
     inline QDebug& operator<<(QDebug& debug, const Word& word) {

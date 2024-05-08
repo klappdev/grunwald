@@ -27,7 +27,7 @@
 #include <QIcon>
 #include <QDebug>
 
-#include "net/DictionaryService.hpp"
+#include "storage/WordStorage.hpp"
 #include "model/WordModel.hpp"
 
 int main(int argc, char *argv[]) {
@@ -40,9 +40,9 @@ int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/res/image/dict.png"));
 
-    QScopedPointer<grunwald::DictionaryService> dictionaryService(new grunwald::DictionaryService{});
+    QScopedPointer<grunwald::WordStorage> wordStorage(new grunwald::WordStorage{});
 
-    qmlRegisterSingletonInstance("grunwald.DictionaryService", 1, 0, "DictionaryService", dictionaryService.get());
+    qmlRegisterSingletonInstance("grunwald.WordStorage", 1, 0, "WordStorage", wordStorage.get());
     qmlRegisterType<grunwald::WordModel>("grunwald.WordModel", 1, 0, "WordModel");
     qmlRegisterType<grunwald::Word>("grunwald.Word", 1, 0, "remoteWord");
 

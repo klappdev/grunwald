@@ -9,9 +9,7 @@ Features which will be implemented in future:
 7. Add loading animation to the list words.
 8. Display loaded image in qml ui, using image provider.
 9. Load word image using REST api.
-10. Save word image in database as blob type. 
-11. Add alternative future+threadpool support for database.
-12. Integrate QCoro library additional support.
-13. Add test for database, network.
-14. Integrate static, dynamic (sanitizer) analyzers.
-15. Implement Qt6 static qml registration.
+10. Integrate QCoro library additional support.
+11. Add test for database, network.
+12. Integrate static, dynamic (sanitizer) analyzers.
+13. Implement Qt6 static qml registration.

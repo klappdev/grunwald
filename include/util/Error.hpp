@@ -35,7 +35,7 @@ namespace grunwald {
         Error(const QString& message, qint32 code) : mMessage(message), mCode(code) {}
         ~Error() = default;
 
-        auto getMessage() const -> QString { return mMessage; }
+        auto getMessage() const -> const QString& { return mMessage; }
         auto getCode() const -> qint32 { return mCode; }
 
     private:

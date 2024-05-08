@@ -24,23 +24,25 @@ set(HEADERS
     include/common/WordType.hpp
     include/common/WordImage.hpp
 
+    include/storage/WordStorage.hpp
     include/db/WordDao.hpp
     include/net/WordParser.hpp
-    include/net/DictionaryService.hpp
+    include/net/WordService.hpp
 
     include/model/WordModel.hpp
 
     include/util/Error.hpp
     include/util/Result.hpp
-    include/util/EnumUtil.hpp
+    include/util/EnumHelper.hpp
 )
 
 set(SOURCES
     main.cpp
 
+    src/storage/WordStorage.cpp
     src/db/WordDao.cpp
     src/net/WordParser.cpp
-    src/net/DictionaryService.cpp
+    src/net/WordService.cpp
 
     src/model/WordModel.cpp
 )

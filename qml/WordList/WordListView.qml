@@ -27,23 +27,34 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 2.2
 
 import grunwald.WordModel 1.0
-import grunwald.DictionaryService 1.0
+import grunwald.WordStorage 1.0
 import grunwald.Word 1.0
 
 import Theme 1.0
 
 ListView {
-    id: root
+    id: wordListView
 
     property remoteWord selectedWord
 
     Component.onCompleted: {
-        DictionaryService.wordContentProcessed.connect(function(word) {
-            console.log(`Remote word: ${word.name}`)
+
+        WordStorage.wordProcessed.connect(function(word) {
+            console.log(`Search word: ${word.name}`)
 
             wordModel.storeWord(word)
 
-            root.selectedWord = word
+            wordListView.selectedWord = word
+        })
+
+        WordStorage.localWordsPrecessed.connect(function(wordArray) {
+            console.log(`Search words: ${wordArray.length}`)
+
+            if (wordArray.length !== 0) {
+                wordModel.storeWords(wordArray)
+
+                wordListView.selectedWord = wordArray[0]
+            }
         })
     }
 
@@ -57,7 +68,18 @@ ListView {
     model: wordModel
 
     delegate: WordDelegate {
-        width: root.width
+        width: wordListView.width
         height: 80
+    }
+
+    highlight: Rectangle {
+        color: Style.themeDefaultColor
+    }
+    focus: true
+    onCurrentItemChanged: {
+        var currentWord = model.getWord(wordListView.currentIndex)
+        wordListView.selectedWord = currentWord
+
+        console.log('Word "' + currentWord.name + '" selected')
     }
 }

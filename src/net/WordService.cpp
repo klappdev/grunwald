@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-#include "net/DictionaryService.hpp"
+#include "net/WordService.hpp"
 
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QEventLoop>
 
-static constexpr const char* const TAG = "[DictionaryService] ";
+static constexpr const char* const TAG = "[WordService] ";
 static const QString BASE_API_URL = "https://en.wiktionary.org";
 static const QString WORD_CONTENT_API_TEMPLATE = "/w/api.php?format=json&action=%1&prop=%2&redirects&continue&titles=%3";
 static const QString WORD_IMAGE_API_TEMPLATE = "/w/api.php?format=json&action=%1&prop=%2&piprop=%3&redirects&continue&titles=%4";
@@ -36,14 +36,13 @@ static const QString REMOTE_SERVER_UNAVAILABLE = "Remote %1 server is not availa
 
 namespace grunwald {
 
-    DictionaryService::DictionaryService(QObject* parent)
-        : QObject(parent) {
+    WordService::WordService(QObject* parent) : QObject(parent) {
     }
 
-    DictionaryService::~DictionaryService() {
+    WordService::~WordService() {
     }
 
-    void DictionaryService::getWordContent(const QString& name) {
+    void WordService::fetchWordContent(const QString& name) {
         QNetworkRequest request;
         mWordName = name;
 
@@ -66,10 +65,10 @@ namespace grunwald {
         QNetworkReply* reply = mNetworkManager.get(request);
 
         QObject::connect(reply, &QNetworkReply::finished,
-                         this, &DictionaryService::handleWordContentRequest);
+                         this, &WordService::handleWordContentRequest);
     }
 
-    void DictionaryService::getWordImage(const QString& name) {
+    void WordService::fetchWordImage(const QString& name) {
         QNetworkRequest request;
 
         if (!checkInternetConnection()) {
@@ -92,28 +91,28 @@ namespace grunwald {
         QNetworkReply* reply = mNetworkManager.get(request);
 
         QObject::connect(reply, &QNetworkReply::finished,
-                         this, &DictionaryService::handleWordImageRequest);
+                         this, &WordService::handleWordImageRequest);
     }
 
-    void DictionaryService::handleWordContentRequest() {
+    void WordService::handleWordContentRequest() {
         auto* reply = static_cast<QNetworkReply*>(sender());
 
         const QByteArray remoteData = reply->readAll();
-        const Result<Word, ParserError> wordResult = mWordParser.parseWordContent(mWordName, remoteData);
+        const Result<Word, ParserError> wordContentResult = mWordParser.parseWordContent(mWordName, remoteData);
 
         const QNetworkReply::NetworkError replyError = reply->error();
 
-        if (replyError == QNetworkReply::NoError && wordResult.hasValue()) {
+        if (replyError == QNetworkReply::NoError && wordContentResult.hasValue()) {
             const int errorCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
             if (errorCode >= 200 && errorCode < 300) {
-                emit wordContentProcessed(wordResult.value());
+                emit wordContentProcessed(wordContentResult.value());
             }
         } else {
             if (replyError == QNetworkReply::ContentNotFoundError ||
                 replyError == QNetworkReply::ContentAccessDenied ||
                 replyError == QNetworkReply::ProtocolInvalidOperationError) {
-                emit wordProcessedError(reply->errorString());
+                emit wordProcessedError(reply->errorString() + ", " + wordContentResult.error().getMessage());
             }
         }
 
@@ -121,7 +120,7 @@ namespace grunwald {
         reply->deleteLater();
     }
 
-    void DictionaryService::handleWordImageRequest() {
+    void WordService::handleWordImageRequest() {
         auto* reply = static_cast<QNetworkReply*>(sender());
 
         const QByteArray remoteData = reply->readAll();
@@ -139,7 +138,7 @@ namespace grunwald {
             if (replyError == QNetworkReply::ContentNotFoundError ||
                 replyError == QNetworkReply::ContentAccessDenied ||
                 replyError == QNetworkReply::ProtocolInvalidOperationError) {
-                emit wordProcessedError(reply->errorString());
+                emit wordProcessedError(reply->errorString() + ", " + wordImageResult.error().getMessage());
             }
         }
 
@@ -147,7 +146,7 @@ namespace grunwald {
         reply->deleteLater();
     }
 
-    bool DictionaryService::checkInternetConnection() {
+    bool WordService::checkInternetConnection() {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
         QEventLoop eventLoop;
         QNetworkRequest request(QUrl("http://www.google.com"));

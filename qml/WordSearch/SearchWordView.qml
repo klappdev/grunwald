@@ -27,7 +27,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 2.2
 import QtQuick.Dialogs 6.6
 
-import grunwald.DictionaryService 1.0
+import grunwald.WordStorage 1.0
 
 import Theme 1.0
 
@@ -40,19 +40,19 @@ Rectangle {
     }
 
     MessageDialog {
-        id: wordErrorDialog
+        id: searchWordDialog
         modality: Qt.ApplicationModal //Qt.WindowModal
         buttons: MessageDialog.Ok
-        title: "Search word error"
+        title: "Search word"
     }
 
     Component.onCompleted: {
 
-        DictionaryService.wordProcessedError.connect(function(error) {
-            var message = `Network error: ${error}`
+        WordStorage.wordError.connect(function(error) {
+            var message = `Search error: ${error}`
 
-            wordErrorDialog.text = message
-            wordErrorDialog.open()
+            searchWordDialog.text = message
+            searchWordDialog.open()
 
             console.log(message)
         })
@@ -136,14 +136,15 @@ Rectangle {
             var nameWord = searchTextEdit.text
 
             if (!!nameWord) {
-                DictionaryService.getWordContent(nameWord);
+                WordStorage.searchWord(nameWord)
 
                 console.info(`Click search button: ${nameWord}`)
             } else {
-                var message = "Click search button, empty string"
+                WordStorage.preloadWords()
 
-                wordErrorDialog.text = message
-                wordErrorDialog.open()
+                var message = "Click search button, name is empty"
+                searchWordDialog.text = message
+                searchWordDialog.open()
 
                 console.warn(message)
             }

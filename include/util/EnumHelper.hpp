@@ -22,58 +22,31 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.9
+#pragma once
 
-import Theme 1.0
+#include <QMetaEnum>
+#include <QString>
 
-Rectangle {
-    id: root
-    color: Style.backgroundColor
-    border {
-        color: "lightgrey"
-        width: 1
-    }
+namespace grunwald::EnumHelper {
 
-    Image {
-        id: wordImage
-        anchors.left: root.left
-        anchors.leftMargin: Style.defaultOffset
-        anchors.verticalCenter: root.verticalCenter
+    template<typename E>
+        requires std::is_enum_v<E>
+    auto fromString(const QString& name) -> std::optional<E> {
+        bool ok = false;
+        auto result = static_cast<E>(QMetaEnum::fromType<E>().keyToValue(name.toUtf8(), &ok));
 
-        width: 64
-        height: 64
-
-        source: "qrc:/res/image/word_icon.png"
-    }
-
-    Column {
-        anchors {
-            left: wordImage.right
-            leftMargin: Style.defaultOffset
-            verticalCenter: root.verticalCenter
-        }
-
-        Text {
-            text: model.name
-            color: Style.textColor
-            font {
-                pointSize: 13
-                family: "Roboto Regular"
-            }
-        }
-        Text {
-            text: model.date
-            color: Style.primaryColor
-            font {
-                pointSize: 13
-                family: "Roboto Regular"
-            }
+        if (!ok) {
+            return std::nullopt;
+        } else {
+            return result;
         }
     }
-    MouseArea{
-        anchors.fill: parent
-        onClicked: {
-            wordListView.currentIndex = index
-        }
+
+    template<typename E>
+        requires std::is_enum_v<E>
+    auto toString(E value) -> QString {
+        const auto result = static_cast<std::underlying_type_t<E>>(value);
+
+        return QString::fromUtf8(QMetaEnum::fromType<E>().valueToKey(result));
     }
 }
