@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -22,15 +22,14 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.9
-//import QtQuick.Window 2.2
-//import QtQuick.Controls 2.2
+import QtQuick 2.15
 
 import Theme 1.0
 
 Rectangle {
     id: root
 
+    property alias hasImageWord: wordDetailHeaderView.hasImageWord
     property alias nameWord: wordDetailHeaderView.nameWord
     property alias translationWord: wordDetailContentView.translationWord
     property alias transcriptionWord: wordDetailHeaderView.transcriptionWord
@@ -48,7 +47,7 @@ Rectangle {
     WordDetailHeaderView {
         id: wordDetailHeaderView
         width: parent.width
-        height: parent.height * 1 / 8
+        height: hasImageWord ? parent.height * 2 / 8 : parent.height * 1 / 8
 
         anchors {
             left: parent.left

@@ -62,9 +62,21 @@ namespace grunwald {
         Word& operator=(const Word&) = default;
 
         Q_INVOKABLE bool hasImage() const {
-            return type == WordType::Noun && !image.url.isEmpty() && !image.data.isEmpty();
+            return type == WordType::Noun;
         }
     };
+
+    inline bool operator==(const Word& left, const Word& right) {
+        return left.id == right.id && left.name == right.name &&
+               left.transcription == right.transcription && left.translation == right.translation &&
+               left.association == right.association && left.etymology == right.etymology &&
+               left.description == right.description && left.type == right.type &&
+               left.image == right.image && left.date == right.date;
+    }
+
+    inline bool operator!=(const Word& left, const Word& right) {
+        return !(left == right);
+    }
 
     inline QDebug& operator<<(QDebug& debug, const Word& word) {
         debug.nospace() << "["

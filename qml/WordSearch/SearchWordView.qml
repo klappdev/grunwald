@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.9
-import QtQuick.Window 2.2
-import QtQuick.Controls 2.2
+import QtQuick 2.15
+import QtQuick.Window 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Dialogs 6.6
 
 import grunwald.WordStorage 1.0
@@ -48,7 +48,7 @@ Rectangle {
 
     Component.onCompleted: {
 
-        WordStorage.wordError.connect(function(error) {
+        WordStorage.wordErrorHandled.connect(function(error) {
             var message = `Search error: ${error}`
 
             searchWordDialog.text = message

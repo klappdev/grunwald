@@ -22,53 +22,24 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.15
+#pragma once
 
-import Theme 1.0
+#include <QQuickAsyncImageProvider>
 
-Column {
-    id: root
-    spacing: Style.mediumOffset
+#include "storage/WordStorage.hpp"
 
-    property string translationWord: "<empty>"
-    property string associationWord: "<empty>"
-    property string etymologyWord: "<empty>"
-    property string descriptionWord: "<empty>"
+namespace grunwald {
 
-    WordCardView {
-        id: translationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+    class AsyncWordImageProvider final : public QQuickAsyncImageProvider {
+        Q_OBJECT
+    public:
+        explicit AsyncWordImageProvider(WordCache* wordCache);
+        ~AsyncWordImageProvider();
 
-        titleCard: qsTr("Translation")
-        contentCard: translationWord
-    }
+        QQuickImageResponse* requestImageResponse(const QString& imageId, const QSize& requestedSize) override;
 
-    WordCardView {
-        id: associationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
-
-        titleCard: qsTr("Association")
-        contentCard: associationWord
-    }
-
-    WordCardView {
-        id: etymologyWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
-
-        titleCard: qsTr("Etymology")
-        contentCard: etymologyWord
-    }
-
-    WordCardView {
-        id: descriptionCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
-
-        titleCard: qsTr("Description")
-        contentCard: descriptionWord
-    }
+    private:
+        WordCache* mWordCache;
+    };
 }
 

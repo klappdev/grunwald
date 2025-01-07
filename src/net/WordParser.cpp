@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -37,8 +37,12 @@
 
 #include "util/EnumHelper.hpp"
 
-static constexpr const char* const TAG = "[WordParser] ";
-static constexpr const char* const DEFAULT_LANGUAGE = "German";  //FIXME: better to use constant or load from settings
+using namespace Qt::Literals::StringLiterals;
+
+namespace {
+    constexpr const char* const TAG = "[WordParser] ";
+    constexpr const char* const DEFAULT_LANGUAGE = "German";  //FIXME: better to use constant or load from settings
+}
 
 namespace grunwald {
 
@@ -120,7 +124,7 @@ namespace grunwald {
         return parseRemoteWord(name, extractValue.toString());
     }
 
-    auto WordParser::parseWordImage(const QByteArray& remoteData) -> Result<QUrl, ParserError> {
+    auto WordParser::parseWordImage(const QByteArray& remoteData) -> Result<WordImage, ParserError> {
         qInfo() << TAG << "Remote data: " << remoteData << Qt::endl;
 
         QJsonParseError jsonParserError;
@@ -196,9 +200,27 @@ namespace grunwald {
             return error;
         }
 
-        qInfo() << TAG << "Remote image url: " << urlImageValue << Qt::endl;
+        qDebug() << TAG << "Remote image url: " << urlImageValue << Qt::endl;
 
-        return QUrl(urlImageValue.toString());
+        const QJsonValue widthImageValue = originalValue.toObject()["width"];
+
+        if (!widthImageValue.isDouble()) {
+            const ParserError error { "Parse json data is not correct, 'width' doesn't exists" };
+            qWarning() << TAG << error << Qt::endl;
+
+            return error;
+        }
+
+        const QJsonValue heightImageValue = originalValue.toObject()["height"];
+
+        if (!heightImageValue.isDouble()) {
+            const ParserError error { "Parse json data is not correct, 'height' doesn't exists" };
+            qWarning() << TAG << error << Qt::endl;
+
+            return error;
+        }
+
+        return WordImage{0, QUrl(urlImageValue.toString()), static_cast<qint32>(widthImageValue.toDouble()), static_cast<qint32>(heightImageValue.toDouble())};
     }
 
     auto WordParser::parseRemoteWord(const QString& name, const QString& remoteData) -> Result<Word, ParserError> {
@@ -209,8 +231,11 @@ namespace grunwald {
 
         const auto languageText = parseLanguageWord(rootNode);
 
-        if (languageText.hasError() || languageText.value() != DEFAULT_LANGUAGE) {
+        if (languageText.hasError()) {
             return languageText.error();
+        } else if (languageText.value() != DEFAULT_LANGUAGE) {
+            const auto detectLanguage = languageText.value();
+            return ParserError{ QString("Detect language %1 is not found. Found language %2").arg(DEFAULT_LANGUAGE).arg(detectLanguage) };
         }
 
         const auto etymologyText = parseEtymologyWord(rootNode);
@@ -222,9 +247,11 @@ namespace grunwald {
         const auto wordType = wordTypeOption ? *wordTypeOption : WordType::Unknown;
 
         QString descriptionText;
+
         if (wordTypeOption) {
             descriptionText = parseDescriptionWord(wordTypeText, rootNode);
         }
+
         const auto associationText = parseAssociationWord(rootNode);
 
         qDebug() << TAG << "End parse word" << Qt::endl;
@@ -235,87 +262,58 @@ namespace grunwald {
     }
 
     auto WordParser::parseLanguageWord(const QGumboNode& node) -> Result<QString, ParserError> {
-        //Search: h2 > span[id*='German']
+        //Search: h2[data-mw-anchor*='German']
         const QGumboNodes h2Nodes = node.getElementsByTagName(HtmlTag::H2);
 
         for (const QGumboNode& h2Node : h2Nodes) {
-            const QGumboNodes spanNodes = h2Node.getElementsByTagName(HtmlTag::SPAN);
-
-            if (!spanNodes.empty()) {
-                const QGumboNode spanNode = spanNodes.front();
-                const QGumboNodes languageNodes = spanNode.getElementById(DEFAULT_LANGUAGE);
-
-                if (!languageNodes.empty()) {
-                    return languageNodes.front().innerText();
-                } else {
-                    qWarning() << TAG << "Parse language is not correct, 'h2 > span[id*='" << DEFAULT_LANGUAGE << "']' doesn't exists" << Qt::endl;
-                }
-            } else {
-                qWarning() << TAG << "Parse language is not correct, 'h2 > span' doesn't exists" << Qt::endl;
+            if (!h2Node.hasAttribute(u"data-mw-anchor"_s) || h2Node.getAttribute(u"data-mw-anchor"_s) != DEFAULT_LANGUAGE) {
+                continue;
             }
+
+            return h2Node.innerText();
         }
 
         return ParserError{ QString("Parse language %1 is not found").arg(DEFAULT_LANGUAGE) };
     }
 
     auto WordParser::parseEtymologyWord(const QGumboNode& node) -> QString {
-        //Search: h3 > span[id*='Etymology'], p
+        //Search: h3[data-mw-anchor*='Etymology'], p
         const QGumboNodes h3Nodes = node.getElementsByTagName(HtmlTag::H3);
 
         for (const QGumboNode& h3Node : h3Nodes) {
-            const QGumboNodes spanNodes = h3Node.getElementsByTagName(HtmlTag::SPAN);
-
-            if (spanNodes.empty()) {
-                qWarning() << TAG << "Parse etymology is not correct, 'h3 > span' doesn't exists" << Qt::endl;
+            if (!h3Node.hasAttribute(u"data-mw-anchor"_s) || h3Node.getAttribute(u"data-mw-anchor"_s) != u"Etymology"_s) {
                 continue;
             }
 
-            const QGumboNode spanNode = spanNodes.front();
-            const QGumboNodes etymologyNodes = spanNode.getElementById("Etymology");
+            const QGumboNode etymologyContentNode = h3Node.getParentNextNode();
 
-            if (!etymologyNodes.empty()) {
-                continue;
-            }
-
-            const QGumboNode etymologyContentNode = const_cast<QGumboNode&>(h3Node).getParentNextNode();
-
-            if (etymologyContentNode && etymologyContentNode.tagName() == QStringLiteral("p")) {
+            if (etymologyContentNode && etymologyContentNode.tagName() == u"p"_s) {
                 const QString etymologyText = etymologyContentNode.outerHtml();
 
                 qDebug() << TAG << "Etymology: " << etymologyText << Qt::endl;
 
-                return etymologyText; //FIXME: delete html tag from text
+                return etymologyText;
             } else {
                 qWarning() << TAG << "Parse etymology is not correct, content doesn't exists" << Qt::endl;
             }
         }
 
-        return QStringLiteral("");
+        return u""_s;
     }
 
     auto WordParser::parseTranscriptionWord(const QGumboNode& node) -> QString {
-        //Search: h3 > span[id*='Pronunciation'], ul > li
+        //Search: h3[data-mw-anchor*='Pronunciation'], ul > li
         const QGumboNodes h3Nodes = node.getElementsByTagName(HtmlTag::H3);
 
         for (const QGumboNode& h3Node : h3Nodes) {
-            const QGumboNodes spanNodes = h3Node.getElementsByTagName(HtmlTag::SPAN);
-
-            if (spanNodes.empty()) {
-                qWarning() << TAG << "Parse transcription is not correct, 'h3 > span' doesn't exists" << Qt::endl;
+            if (!h3Node.hasAttribute(u"data-mw-anchor"_s) || h3Node.getAttribute(u"data-mw-anchor"_s) != u"Pronunciation"_s) {
                 continue;
             }
 
-            const QGumboNode spanNode = spanNodes.front();
-            const QGumboNodes transcriptionNodes = spanNode.getElementById("Pronunciation");
+            const QGumboNode transcriptionContentNode = h3Node.getParentNextNode();
 
-            if (transcriptionNodes.empty()) {
-                continue;
-            }
-
-            const QGumboNode transcriptionContentNode = const_cast<QGumboNode&>(h3Node).getParentNextNode();
-
-            if (!transcriptionContentNode && transcriptionContentNode.tagName() != QStringLiteral("ul")) {
-                qWarning() << TAG << "Parse transcription is not correct, 'h3 > span, ul' doesn't exists" << Qt::endl;
+            if (!transcriptionContentNode && transcriptionContentNode.tagName() != u"ul"_s) {
+                qWarning() << TAG << "Parse transcription is not correct, 'h3[data-mw-anchor], ul' doesn't exists" << Qt::endl;
                 continue;
             }
 
@@ -326,13 +324,13 @@ namespace grunwald {
 
                 qDebug() << TAG << "Transcription: " << transcriptionText << Qt::endl;
 
-                return transcriptionText; //FIXME: delete html tag from text
+                return transcriptionText;
             } else {
-                qWarning() << TAG << "Parse transcription is not correct, 'h3 > span, ul > li' doesn't exists" << Qt::endl;
+                qWarning() << TAG << "Parse transcription is not correct, 'h3[data-mw-anchor], ul > li' doesn't exists" << Qt::endl;
             }
         }
 
-        return QStringLiteral("");
+        return u""_s;
     }
 
     auto WordParser::parseTranslationWord(const QGumboNode& node) -> QString {
@@ -354,31 +352,20 @@ namespace grunwald {
             return translationText;
         }
 
-        return QStringLiteral("");
+        return u""_s;
     }
 
     auto WordParser::parseTypeWord(const QGumboNode& node) -> QString {
-        //Search: h3 > span[id*='$partOfSpeech']
+        //Search: h3[data-mw-anchor*='$partOfSpeech']
 
         const QMetaEnum wordTypeEnum = QMetaEnum::fromType<WordType>();
+        const QGumboNodes h3Nodes = node.getElementsByTagName(HtmlTag::H3);
 
-        for (int i = 0; i < wordTypeEnum.keyCount(); ++i) {
-            const QString wordType = QString::fromUtf8(wordTypeEnum.key(i));
-                const QGumboNodes h3Nodes = node.getElementsByTagName(HtmlTag::H3);
+        for (const QGumboNode& h3Node : h3Nodes) {
+            for (int i = 0; i < wordTypeEnum.keyCount(); ++i) {
+                const QString wordType = QString::fromUtf8(wordTypeEnum.key(i));
 
-            for (const QGumboNode& h3Node : h3Nodes) {
-                const QGumboNodes spanNodes = h3Node.getElementsByTagName(HtmlTag::SPAN);
-
-                if (spanNodes.empty()) {
-                    qWarning() << TAG << "Parse partOfSpeach is not correct, 'h3 > span' doesn't exists" << Qt::endl;
-                    continue;
-                }
-
-                const QGumboNode spanNode = spanNodes.front();
-                const QGumboNodes wordTypeNodes = spanNode.getElementById(wordType);
-
-                if (wordTypeNodes.empty()) {
-                    //qWarning() << TAG << "Parse partOfSpeach is not correct, 'h3 > span[id*='" << wordType << "']' doesn't exists" << Qt::endl;
+                if (!h3Node.hasAttribute(u"data-mw-anchor"_s) || h3Node.getAttribute(u"data-mw-anchor"_s) != wordType) {
                     continue;
                 }
 
@@ -388,40 +375,30 @@ namespace grunwald {
             }
         }
 
-        return QStringLiteral("");
+        return u""_s;
     }
 
     auto WordParser::parseDescriptionWord(const QString& wordType, const QGumboNode& node) -> QString {
-        //Search: h3 > span[id*='$partOfSpeech'], p
+        //Search: h3[data-mw-anchor*='$partOfSpeech'], p
         const QGumboNodes h3Nodes = node.getElementsByTagName(HtmlTag::H3);
 
         for (const QGumboNode& h3Node : h3Nodes) {
-            const QGumboNodes spanNodes = h3Node.getElementsByTagName(HtmlTag::SPAN);
-
-            if (spanNodes.empty()) {
-                qWarning() << TAG << "Parse description is not correct, 'h3 > span' doesn't exists" << Qt::endl;
+            if (!h3Node.hasAttribute(u"data-mw-anchor"_s) || h3Node.getAttribute(u"data-mw-anchor"_s) != wordType) {
                 continue;
             }
 
-            const QGumboNode spanNode = spanNodes.front();
-            const QGumboNodes descriptionNodes = spanNode.getElementById(wordType);
+            const QGumboNode descriptionContentNode = h3Node.getParentNextNode();
 
-            if (!descriptionNodes.empty()) {
-                continue;
-            }
-
-            const QGumboNode descriptionContentNode = const_cast<QGumboNode&>(h3Node).getParentNextNode();
-
-            if (descriptionContentNode && descriptionContentNode.tagName() == QStringLiteral("p")) {
+            if (descriptionContentNode && descriptionContentNode.tagName() == u"p"_s) {
                 const QString descriptionText = descriptionContentNode.outerHtml();
 
                 qDebug() << TAG << "Description: " << descriptionText << Qt::endl;
 
-                return descriptionText; //FIXME: delete html tag from text
+                return descriptionText;
             }
         }
 
-        return QStringLiteral("");
+        return u""_s;
     }
 
     auto WordParser::parseAssociationWord(const QGumboNode& node) -> QString {
@@ -434,96 +411,66 @@ namespace grunwald {
     }
 
     auto WordParser::parseAntonymsWord(const QGumboNode& node) -> QString {
-        //Search: h4 > span[id*='Antonyms'], p
+        //Search: h4[data-mw-anchor*='Antonyms'], p
         const QGumboNodes h4Nodes = node.getElementsByTagName(HtmlTag::H4);
 
         for (const QGumboNode& h4Node : h4Nodes) {
-            const QGumboNodes spanNodes = h4Node.getElementsByTagName(HtmlTag::SPAN);
-
-            if (spanNodes.empty()) {
-                qWarning() << TAG << "Parse antonyms is not correct, 'h3 > span' doesn't exists" << Qt::endl;
+            if (!h4Node.hasAttribute(u"data-mw-anchor"_s) || h4Node.getAttribute(u"data-mw-anchor"_s) != u"Antonyms"_s) {
                 continue;
             }
 
-            const QGumboNode spanNode = spanNodes.front();
-            const QGumboNodes antonymsNodes = spanNode.getElementById("Antonyms");
+            const QGumboNode antonymsContentNode = h4Node.getParentNextNode();
 
-            if (!antonymsNodes.empty()) {
-                continue;
-            }
-
-            const QGumboNode antonymsContentNode = const_cast<QGumboNode&>(h4Node).getParentNextNode();
-
-            if (antonymsContentNode && antonymsContentNode.tagName() == QStringLiteral("p")) {
+            if (antonymsContentNode && antonymsContentNode.tagName() == u"p"_s) {
                 const QString antonymsText = antonymsContentNode.outerHtml();
 
                 qDebug() << TAG << "Antonyms: " << antonymsText << Qt::endl;
 
-                return antonymsText; //FIXME: delete html tag from text
+                return antonymsText;
             }
         }
 
-        return QStringLiteral("");
+        return u""_s;
     }
 
     auto WordParser::parseSynonymsWord(const QGumboNode& node) -> QString {
         QString synonymsText;
 
-        //Search: h3 > span[id*='Synonyms'], ul
+        //Search: h3[data-mw-anchor*='Synonyms'], ul
         const QGumboNodes h3Nodes = node.getElementsByTagName(HtmlTag::H3);
 
         for (const QGumboNode& h3Node : h3Nodes) {
-            const QGumboNodes spanNodes = h3Node.getElementsByTagName(HtmlTag::SPAN);
-
-            if (spanNodes.empty()) {
-                qWarning() << TAG << "Parse synonyms is not correct, 'h3 > span' doesn't exists" << Qt::endl;
+            if (!h3Node.hasAttribute(u"data-mw-anchor"_s) || h3Node.getAttribute(u"data-mw-anchor"_s) != u"Synonyms"_s) {
                 continue;
             }
 
-            const QGumboNode spanNode = spanNodes.front();
-            const QGumboNodes synonymsNodes = spanNode.getElementById("Synonyms");
+            const QGumboNode synonymsContentNode = h3Node.getParentNextNode();
 
-            if (!synonymsNodes.empty()) {
-                continue;
-            }
-
-            const QGumboNode synonymsContentNode = const_cast<QGumboNode&>(h3Node).getParentNextNode();
-
-            if (synonymsContentNode && synonymsContentNode.tagName() == QStringLiteral("ul")) {
+            if (synonymsContentNode && synonymsContentNode.tagName() == u"ul"_s) {
                 const QString h3SynonymsText = synonymsContentNode.outerHtml();
 
                 qDebug() << TAG << "Synonyms, h3: " << h3SynonymsText << Qt::endl;
 
-                synonymsText += h3SynonymsText; //FIXME: delete html tag from text
+                synonymsText += h3SynonymsText;
             }
         }
 
-        //Search: h4 > span[id*='Synonyms'], ul
+        //Search: h4[data-mw-anchor*='Synonyms'], ul
         const QGumboNodes h4Nodes = node.getElementsByTagName(HtmlTag::H4);
 
         for (const QGumboNode& h4Node : h4Nodes) {
-            const QGumboNodes spanNodes = h4Node.getElementsByTagName(HtmlTag::SPAN);
-
-            if (spanNodes.empty()) {
-                qWarning() << TAG << "Parse synonyms is not correct, 'h4 > span' doesn't exists" << Qt::endl;
+            if (!h4Node.hasAttribute(u"data-mw-anchor"_s) || h4Node.getAttribute(u"data-mw-anchor"_s) != u"Synonyms"_s) {
                 continue;
             }
 
-            const QGumboNode spanNode = spanNodes.front();
-            const QGumboNodes synonymsNodes = spanNode.getElementById("Synonyms");
+            const QGumboNode synonymsContentNode = h4Node.getParentNextNode();
 
-            if (!synonymsNodes.empty()) {
-                continue;
-            }
-
-            const QGumboNode synonymsContentNode = const_cast<QGumboNode&>(h4Node).getParentNextNode();
-
-            if (synonymsContentNode && synonymsContentNode.tagName() == QStringLiteral("ul")) {
+            if (synonymsContentNode && synonymsContentNode.tagName() == u"ul"_s) {
                 const QString h4SynonymsText = synonymsContentNode.outerHtml();
 
                 qDebug() << TAG << "Synonyms, h4: " << h4SynonymsText << Qt::endl;
 
-                synonymsText += h4SynonymsText; //FIXME: delete html tag from text
+                synonymsText += h4SynonymsText;
             }
         }
 

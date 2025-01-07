@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #include <QIcon>
 #include <QDebug>
 
+#include "image/AsyncWordImageProvider.hpp"
 #include "storage/WordStorage.hpp"
 #include "model/WordModel.hpp"
 
@@ -40,13 +41,15 @@ int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/res/image/dict.png"));
 
-    QScopedPointer<grunwald::WordStorage> wordStorage(new grunwald::WordStorage{});
+    QScopedPointer<grunwald::WordCache> wordCache(new grunwald::WordCache{});
+    QScopedPointer<grunwald::WordStorage> wordStorage(new grunwald::WordStorage{wordCache.get()});
 
     qmlRegisterSingletonInstance("grunwald.WordStorage", 1, 0, "WordStorage", wordStorage.get());
     qmlRegisterType<grunwald::WordModel>("grunwald.WordModel", 1, 0, "WordModel");
     qmlRegisterType<grunwald::Word>("grunwald.Word", 1, 0, "remoteWord");
 
     QQmlApplicationEngine engine;
+    engine.addImageProvider(QStringLiteral("grunwald"), new grunwald::AsyncWordImageProvider{wordCache.get()});
     engine.addImportPath(":/qml");
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
 

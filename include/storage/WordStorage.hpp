@@ -24,17 +24,17 @@
 
 #pragma once
 
-#include <QAtomicPointer>
-
+#include "cache/WordCache.hpp"
 #include "db/WordDao.hpp"
-#include "net/WordService.hpp"
+#include "net/WordContentService.hpp"
 
 namespace grunwald {
 
     class WordStorage final : public QObject {
         Q_OBJECT
+        Q_PROPERTY(bool wordCached READ isWordCached NOTIFY wordCachedChanged)
     public:
-        WordStorage(QObject* parent = nullptr);
+        WordStorage(WordCache* wordCache);
         ~WordStorage();
 
         Q_INVOKABLE void preloadWords();
@@ -43,21 +43,25 @@ namespace grunwald {
         Q_INVOKABLE void insertWord();
         Q_INVOKABLE void removeWord();
 
-        Q_INVOKABLE bool isWordCached(const QString& name);
+        bool isWordCached() const;
 
     signals:
-        void wordProcessed(const Word& word);
-        void localWordsPrecessed(const QVariant& words);
+        void wordContentHandled(const Word& word);
+        void localWordsHandled(const QVariant& words);
 
-        void wordError(const QString& error);
+        void wordErrorHandled(const QString& error);
+        void wordCachedChanged();
+
+    private slots:
+        void onWordContentProcessFinished(const Word& searchedWord);
+        void onWordProcessErrorFinished(const QString& errorMessage);
 
     private:
-        void updateCurrentWord(const Word& newWord);
         auto prepareWords(const QList<Word>& words) -> QVariantList;
 
-        QAtomicPointer<Word> mCurrentWord;
+        WordCache* mWordCache;
 
         WordDao mWordDao;
-        WordService mWordService;
+        WordContentService mWordContentService;
     };
 }

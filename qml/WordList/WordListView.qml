@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.9
-import QtQuick.Window 2.2
-import QtQuick.Controls 2.2
+import QtQuick 2.15
+import QtQuick.Window 2.15
+import QtQuick.Controls 2.15
 
 import grunwald.WordModel 1.0
 import grunwald.WordStorage 1.0
@@ -39,7 +39,7 @@ ListView {
 
     Component.onCompleted: {
 
-        WordStorage.wordProcessed.connect(function(word) {
+        WordStorage.wordContentHandled.connect(function(word) {
             console.log(`Search word: ${word.name}`)
 
             wordModel.storeWord(word)
@@ -47,7 +47,7 @@ ListView {
             wordListView.selectedWord = word
         })
 
-        WordStorage.localWordsPrecessed.connect(function(wordArray) {
+        WordStorage.localWordsHandled.connect(function(wordArray) {
             console.log(`Search words: ${wordArray.length}`)
 
             if (wordArray.length !== 0) {

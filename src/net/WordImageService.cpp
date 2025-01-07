@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -22,60 +22,33 @@
  * SOFTWARE.
  */
 
-#include "net/WordService.hpp"
+#include "net/WordImageService.hpp"
 
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QEventLoop>
 
-static constexpr const char* const TAG = "[WordService] ";
-static const QString BASE_API_URL = "https://en.wiktionary.org";
-static const QString WORD_CONTENT_API_TEMPLATE = "/w/api.php?format=json&action=%1&prop=%2&redirects&continue&titles=%3";
-static const QString WORD_IMAGE_API_TEMPLATE = "/w/api.php?format=json&action=%1&prop=%2&piprop=%3&redirects&continue&titles=%4";
-static const QString REMOTE_SERVER_UNAVAILABLE = "Remote %1 server is not available";
+namespace {
+    constexpr const char* const TAG = "[WordImageService] ";
+    const QString BASE_API_URL = "https://en.wiktionary.org";
+    const QString WORD_IMAGE_API_TEMPLATE = "/w/api.php?format=json&action=%1&prop=%2&piprop=%3&redirects&continue&titles=%4";
+    const QString REMOTE_SERVER_UNAVAILABLE = "Remote %1 server is not available";
+}
 
 namespace grunwald {
 
-    WordService::WordService(QObject* parent) : QObject(parent) {
+    WordImageService::WordImageService(QObject* parent) : QObject(parent) {
     }
 
-    WordService::~WordService() {
+    WordImageService::~WordImageService() {
     }
 
-    void WordService::fetchWordContent(const QString& name) {
-        QNetworkRequest request;
-        mWordName = name;
-
+    void WordImageService::fetchWordImage(const QString& name) {
         if (!checkInternetConnection()) {
             const NetworkError networkError { REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL) };
             qWarning() << TAG << networkError << Qt::endl;
 
-            emit wordProcessedError(networkError.getMessage());
-            return;
-        }
-
-        const QString prepareApiUrl = WORD_CONTENT_API_TEMPLATE.arg("query")
-            .arg("extracts")
-            .arg(name);
-        request.setUrl(QUrl(BASE_API_URL + prepareApiUrl));
-        request.setRawHeader("Content-Type","application/json");
-
-        qInfo() << TAG << "Prepare request: " << request.url().toString() << Qt::endl;
-
-        QNetworkReply* reply = mNetworkManager.get(request);
-
-        QObject::connect(reply, &QNetworkReply::finished,
-                         this, &WordService::handleWordContentRequest);
-    }
-
-    void WordService::fetchWordImage(const QString& name) {
-        QNetworkRequest request;
-
-        if (!checkInternetConnection()) {
-            const NetworkError networkError { REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL) };
-            qWarning() << TAG << networkError << Qt::endl;
-
-            emit wordProcessedError(networkError.getMessage());
+            emit wordImageErrorProcessed(networkError.getMessage());
             return;
         }
 
@@ -83,6 +56,8 @@ namespace grunwald {
             .arg("pageimages")
             .arg("original")
             .arg(name);
+
+        QNetworkRequest request;
         request.setUrl(QUrl(BASE_API_URL + prepareApiUrl));
         request.setRawHeader("Content-Type","application/json");
 
@@ -91,28 +66,50 @@ namespace grunwald {
         QNetworkReply* reply = mNetworkManager.get(request);
 
         QObject::connect(reply, &QNetworkReply::finished,
-                         this, &WordService::handleWordImageRequest);
+                         this, &WordImageService::onWordImageUrlRequestFinished);
     }
 
-    void WordService::handleWordContentRequest() {
+    void WordImageService::fetchWordImageData(const WordImage& wordImage) {
+        if (!checkInternetConnection()) {
+            const NetworkError networkError { REMOTE_SERVER_UNAVAILABLE.arg(BASE_API_URL) };
+            qWarning() << TAG << networkError << Qt::endl;
+
+            emit wordImageErrorProcessed(networkError.getMessage());
+            return;
+        }
+
+        mWordImage = wordImage;
+
+        QNetworkRequest request;
+        request.setUrl(wordImage.url);
+        request.setRawHeader("Content-Type","application/json");
+
+        qInfo() << TAG << "Prepare request: " << request.url().toString() << Qt::endl;
+
+        QNetworkReply* reply = mNetworkManager.get(request);
+
+        QObject::connect(reply, &QNetworkReply::finished,
+                         this, &WordImageService::onWordImageDataRequestFinished);
+    }
+
+    void WordImageService::onWordImageUrlRequestFinished() {
         auto* reply = static_cast<QNetworkReply*>(sender());
 
         const QByteArray remoteData = reply->readAll();
-        const Result<Word, ParserError> wordContentResult = mWordParser.parseWordContent(mWordName, remoteData);
-
+        const Result<WordImage, ParserError> wordImageUrlResult = mWordParser.parseWordImage(remoteData);
         const QNetworkReply::NetworkError replyError = reply->error();
 
-        if (replyError == QNetworkReply::NoError && wordContentResult.hasValue()) {
+        if (replyError == QNetworkReply::NoError && wordImageUrlResult.hasValue()) {
             const int errorCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-            if (errorCode >= 200 && errorCode < 300) {
-                emit wordContentProcessed(wordContentResult.value());
+            if (errorCode >= 200 && errorCode < 300 && !wordImageUrlResult->url.isEmpty()) {
+                fetchWordImageData(wordImageUrlResult.value());
             }
         } else {
             if (replyError == QNetworkReply::ContentNotFoundError ||
                 replyError == QNetworkReply::ContentAccessDenied ||
                 replyError == QNetworkReply::ProtocolInvalidOperationError) {
-                emit wordProcessedError(reply->errorString() + ", " + wordContentResult.error().getMessage());
+                emit wordImageErrorProcessed(reply->errorString() + ", " + wordImageUrlResult.error().getMessage());
             }
         }
 
@@ -120,25 +117,25 @@ namespace grunwald {
         reply->deleteLater();
     }
 
-    void WordService::handleWordImageRequest() {
+    void WordImageService::onWordImageDataRequestFinished() {
         auto* reply = static_cast<QNetworkReply*>(sender());
 
-        const QByteArray remoteData = reply->readAll();
-        const Result<QUrl, ParserError> wordImageResult = mWordParser.parseWordImage(remoteData);
-
+        const QByteArray imageData = reply->readAll();
         const QNetworkReply::NetworkError replyError = reply->error();
 
-        if (replyError == QNetworkReply::NoError && wordImageResult.hasValue()) {
+        if (replyError == QNetworkReply::NoError) {
             const int errorCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-            if (errorCode >= 200 && errorCode < 300) {
-                emit wordImageProcessed(wordImageResult.value());
+            if (errorCode >= 200 && errorCode < 300 && !imageData.isEmpty()) {
+                mWordImage.data = imageData;
+
+                emit wordImageProcessed(mWordImage);
             }
         } else {
             if (replyError == QNetworkReply::ContentNotFoundError ||
                 replyError == QNetworkReply::ContentAccessDenied ||
                 replyError == QNetworkReply::ProtocolInvalidOperationError) {
-                emit wordProcessedError(reply->errorString() + ", " + wordImageResult.error().getMessage());
+                emit wordImageErrorProcessed(reply->errorString());
             }
         }
 
@@ -146,10 +143,10 @@ namespace grunwald {
         reply->deleteLater();
     }
 
-    bool WordService::checkInternetConnection() {
+    bool WordImageService::checkInternetConnection() {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
         QEventLoop eventLoop;
-        QNetworkRequest request(QUrl("http://www.google.com"));
+        QNetworkRequest request(QUrl(QStringLiteral("http://www.google.com")));
 
         QNetworkReply* reply = mNetworkManager.get(request);
 

@@ -17,7 +17,7 @@ $ ~/.local/bin/qmake2cmake QGumboParser.pro --min-qt-version 6.3
 
 6) Add extension methods in QGumboNode class
     //XXX: Begin extension methods
-    QGumboNode getParent() {
+    QGumboNode getParent() const {
         GumboNode* parentNode = ptr_->parent;
         Q_ASSERT(parentNode);
 
@@ -25,7 +25,7 @@ $ ~/.local/bin/qmake2cmake QGumboParser.pro --min-qt-version 6.3
         return result;
     }
 
-    QGumboNode getParentNextNode() {
+    QGumboNode getParentNextNode() const {
         GumboNode* parentNode = ptr_->parent;
         Q_ASSERT(parentNode);
         Q_ASSERT(parentNode->type == GUMBO_NODE_ELEMENT);

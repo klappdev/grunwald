@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2025 https://github.com/klappdev
+ * Copyright (c) 2023-2024 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -22,53 +22,48 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.15
+#pragma once
 
-import Theme 1.0
+#include <QtVersionChecks>
 
-Column {
-    id: root
-    spacing: Style.mediumOffset
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
+#include <QNetworkConfigurationManager>
+#endif
+#include <QNetworkAccessManager>
 
-    property string translationWord: "<empty>"
-    property string associationWord: "<empty>"
-    property string etymologyWord: "<empty>"
-    property string descriptionWord: "<empty>"
+#include "net/WordParser.hpp"
+#include "common/Word.hpp"
+#include "util/Error.hpp"
 
-    WordCardView {
-        id: translationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+namespace grunwald {
+    using NetworkError = Error;
 
-        titleCard: qsTr("Translation")
-        contentCard: translationWord
-    }
+    class WordImageService final : public QObject {
+        Q_OBJECT
+    public:
+        WordImageService(QObject* parent = nullptr);
+        ~WordImageService();
 
-    WordCardView {
-        id: associationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+        void fetchWordImage(const QString& name);
 
-        titleCard: qsTr("Association")
-        contentCard: associationWord
-    }
+    signals:
+        void wordImageProcessed(const WordImage& wordImage);
 
-    WordCardView {
-        id: etymologyWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+        void wordImageErrorProcessed(const QString& error);
 
-        titleCard: qsTr("Etymology")
-        contentCard: etymologyWord
-    }
+    private slots:
+        void onWordImageUrlRequestFinished();
+        void onWordImageDataRequestFinished();
 
-    WordCardView {
-        id: descriptionCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+    private:
+        void fetchWordImageData(const WordImage& wordImage);
+        bool checkInternetConnection();
 
-        titleCard: qsTr("Description")
-        contentCard: descriptionWord
-    }
+        QNetworkAccessManager mNetworkManager;
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
+        QNetworkConfigurationManager mNetworkConfigurationManager;
+#endif
+        WordParser mWordParser;
+        WordImage mWordImage;
+    };
 }
-

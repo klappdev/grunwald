@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -22,50 +22,24 @@
  * SOFTWARE.
  */
 
-#pragma once
+#include "image/AsyncWordImageProvider.hpp"
+#include "image/AsyncWordImageResponse.hpp"
 
-#include <QtVersionChecks>
-
-#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
-#include <QNetworkConfigurationManager>
-#endif
-#include <QNetworkAccessManager>
-#include <QUrl>
-
-#include "net/WordParser.hpp"
-#include "common/Word.hpp"
-#include "util/Error.hpp"
+namespace {
+    constexpr const char* const TAG = "[AsyncWordImageProvider] ";
+}
 
 namespace grunwald {
-    using NetworkError = Error;
 
-    class WordService final : public QObject {
-        Q_OBJECT
-    public:
-        WordService(QObject* parent = nullptr);
-        ~WordService();
+    AsyncWordImageProvider::AsyncWordImageProvider(WordCache* wordCache)
+        : mWordCache(wordCache) {
+    }
 
-        void fetchWordContent(const QString& name);
-        void fetchWordImage(const QString& name);
+    AsyncWordImageProvider::~AsyncWordImageProvider() {
+        qDebug() << TAG << "AsyncWordImageProvider was destroyed!" << Qt::endl;
+    }
 
-    signals:
-        void wordContentProcessed(const Word& word);
-        void wordImageProcessed(const QUrl& imageUrl);
-
-        void wordProcessedError(const QString& error);
-
-    private slots:
-        void handleWordContentRequest();
-        void handleWordImageRequest();
-
-    private:
-        bool checkInternetConnection();
-
-        QNetworkAccessManager mNetworkManager;
-#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
-        QNetworkConfigurationManager mNetworkConfigurationManager;
-#endif
-        WordParser mWordParser;
-        QString mWordName;
-    };
+    QQuickImageResponse* AsyncWordImageProvider::requestImageResponse(const QString& imageId, const QSize& requestedSize) {
+        return new AsyncWordImageResponse{mWordCache, imageId, requestedSize};
+    }
 }

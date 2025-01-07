@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -26,29 +26,25 @@
 
 #include <algorithm>
 
-static constexpr const char* const TAG = "[WordStorage] ";
+namespace {
+    constexpr const char* const TAG = "[WordStorage] ";
+}
 
 namespace grunwald {
 
-    WordStorage::WordStorage(QObject* parent)
-        : QObject(parent)
-        , mCurrentWord(new Word()) {
+    WordStorage::WordStorage(WordCache* wordCache) : mWordCache(wordCache) {
+
+        QObject::connect(&mWordContentService, &WordContentService::wordContentProcessed,
+                         this, &WordStorage::onWordContentProcessFinished);
+        QObject::connect(&mWordContentService, &WordContentService::wordContentErrorProcessed,
+                         this, &WordStorage::onWordProcessErrorFinished);
     }
 
     WordStorage::~WordStorage() {
-        auto* word = mCurrentWord.loadAcquire();
-        delete word;
     }
 
-    bool WordStorage::isWordCached(const QString& name) {
-        return mWordDao.checkIfExists(name);
-    }
-
-    void WordStorage::updateCurrentWord(const Word& newWord) {
-        auto* atomicWord = mCurrentWord.loadAcquire();
-        *atomicWord = newWord;
-
-        mCurrentWord.storeRelease(atomicWord);
+    bool WordStorage::isWordCached() const {
+        return mWordCache->isValid();
     }
 
     auto WordStorage::prepareWords(const QList<Word>& words) -> QVariantList {
@@ -70,100 +66,92 @@ namespace grunwald {
             QVariantList variantWords = prepareWords(localWords);
 
             if (!localWords.isEmpty()) {
-                updateCurrentWord(localWords.at(0));
+                mWordCache->storeWordContent(localWords.at(0));
             }
 
             qInfo() << TAG << "Load all words from db success!" << Qt::endl;
-            emit localWordsPrecessed(QVariant::fromValue(variantWords));
+            emit localWordsHandled(QVariant::fromValue(variantWords));
         } else {
-            const QString errorMessage = "Error load all words from db: " + result.error().getMessage();
+            mWordCache->clear();
+
+            const QString errorMessage = "Error load all words from db: " + (result.hasError() ? result.error().getMessage() : "unknown");
 
             qWarning() << TAG << errorMessage << Qt::endl;
-            emit wordError(errorMessage);
+            emit wordErrorHandled(errorMessage);
         }
     }
 
     void WordStorage::searchWord(const QString& name) {
-        if (isWordCached(name)) {
+        if (mWordDao.checkIfExists(name)) {
             Result<QVector<Word>, DbError> result = mWordDao.search(name);
 
             if (result.hasValue() && !result.value().isEmpty()) {
                 auto searchedWord = result.value().at(0);
-                updateCurrentWord(searchedWord);
+                mWordCache->storeWordContent(searchedWord);
+
 
                 qInfo() << TAG << "Search word into db: " << searchedWord.name << " success!" << Qt::endl;
-                emit wordProcessed(searchedWord);
+                emit wordContentHandled(searchedWord);
             } else {
+                mWordCache->clear();
+
                 const QString errorMessage = "Error search word into db: " + result.error().getMessage();
 
                 qWarning() << TAG << errorMessage << Qt::endl;
-                emit wordError(errorMessage);
+                emit wordErrorHandled(errorMessage);
             }
         } else {
-            mWordService.fetchWordContent(name);
-
-            QObject::connect(&mWordService, &WordService::wordContentProcessed,
-                             this, [this](const Word& searchedWord) {
-                updateCurrentWord(searchedWord);
-
-                qInfo() << TAG << "Search word from network: " << searchedWord.name << " success!" << Qt::endl;
-                emit wordProcessed(searchedWord);
-            });
-            QObject::connect(&mWordService, &WordService::wordProcessedError,
-                             this, [this](const QString& errorMessage) {
-                const QString extendedErrorMessage = "Error search word from network: " + errorMessage;
-
-                qWarning() << TAG << extendedErrorMessage << Qt::endl;
-                emit wordError(extendedErrorMessage);
-            });
+            mWordCache->clear();
+            mWordContentService.fetchWordContent(name);
         }
     }
 
     void WordStorage::insertWord() {
-        Word* wordPointer = mCurrentWord.loadAcquire();
+        Word word = mWordCache->loadWordContent();
 
-        if (wordPointer == nullptr) {
-            qWarning() << TAG << "Cached word is NULL!" << Qt::endl;
-            return;
-        }
-        const QString wordName = wordPointer->name;
-
-        Result<void, DbError> result = mWordDao.add(*wordPointer);
+        Result<void, DbError> result = mWordDao.add(word);
 
         if (result.hasError()) {
             const QString errorMessage = "Error save word into db: " + result.error().getMessage();
 
             qWarning() << TAG << errorMessage << Qt::endl;
-            emit wordError(errorMessage);
+            emit wordErrorHandled(errorMessage);
         } else {
-            const QString infoMessage = "Save word into db: " + wordName + " success!";
+            const QString infoMessage = "Save word into db: " + word.name + " success!";
 
             qInfo() << TAG << infoMessage << Qt::endl;
         }
     }
 
     void WordStorage::removeWord() {
-        Word* wordPointer = mCurrentWord.loadAcquire();
+        Word word = mWordCache->loadWordContent();
 
-        if (wordPointer == nullptr) {
-            qWarning() << TAG << "Cached word is NULL!" << Qt::endl;
-            return;
-        }
-
-        const QString wordName = wordPointer->name;
-
-        Result<void, DbError> result = mWordDao.remove(*wordPointer);
+        Result<void, DbError> result = mWordDao.remove(word);
 
         if (result.hasError()) {
             const QString errorMessage = "Error remove word from db: " + result.error().getMessage();
 
             qWarning() << TAG << errorMessage << Qt::endl;
-            emit wordError(errorMessage);
+            emit wordErrorHandled(errorMessage);
         } else {
-            const QString infoMessage = "Remove word from db: " + wordName + " success!";
+            const QString infoMessage = "Remove word from db: " + word.name + " success!";
 
             qInfo() << TAG << infoMessage << Qt::endl;
         }
+    }
+
+    void WordStorage::onWordContentProcessFinished(const Word& searchedWord) {
+        mWordCache->storeWordContent(searchedWord);
+
+        qInfo() << TAG << "Search word from network: " << searchedWord.name << " success!" << Qt::endl;
+        emit wordContentHandled(searchedWord);
+    }
+
+    void WordStorage::onWordProcessErrorFinished(const QString& errorMessage) {
+        const QString extendedErrorMessage = "Error search word from network: " + errorMessage;
+
+        qWarning() << TAG << extendedErrorMessage << Qt::endl;
+        emit wordErrorHandled(extendedErrorMessage);
     }
 }
 

@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -22,43 +22,37 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.9
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
 
 import Theme 1.0
 
-Column {
+RowLayout {
     id: root
     spacing: Style.mediumOffset
+    Layout.fillWidth: true
 
+    property bool hasImageWord: false
     property string nameWord: "<empty>"
     property string transcriptionWord: "[empty]"
 
-    Text {
-        id: nameText
-        text: nameWord
-        color: Style.primaryColor
-        font {
-            pointSize: 18
-            family: "Roboto Regular"
-        }
-    }
-
-    Text {
-        id: transcriptionText
-        text: transcriptionWord
-        color: Style.textColor
-        font {
-            pointSize: 13
-            family: "Roboto Regular"
-        }
-    }
-
-    Row {
+    ColumnLayout {
         spacing: Style.tinyOffset
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
 
         Text {
-            id: audioText
-            text: "Audio: "
+            id: nameText
+            text: nameWord
+            color: Style.primaryColor
+            font {
+                pointSize: 18
+                family: "Roboto Regular"
+            }
+        }
+
+        Text {
+            id: transcriptionText
+            text: transcriptionWord
             color: Style.textColor
             font {
                 pointSize: 13
@@ -66,14 +60,41 @@ Column {
             }
         }
 
+        Row {
+            spacing: Style.tinyOffset
+
+            Text {
+                id: audioText
+                text: qsTr("Audio: ")
+                color: Style.textColor
+                font {
+                    pointSize: 13
+                    family: "Roboto Regular"
+                }
+            }
+
+            Image {
+                id: audioImage
+
+                width: 24
+                height: 24
+
+                source: Style.isDarkTheme ? "qrc:/res/image/speak_inverted.png"
+                                          : "qrc:/res/image/speak.png"
+            }
+        }
+    }
+
+    ColumnLayout {
+        spacing: Style.tinyOffset
+        Layout.alignment: Qt.AlignRight
+
         Image {
-            id: audioImage
-
-            width: 24
-            height: 24
-
-            source: Style.isDarkTheme ? "qrc:/res/image/speak_inverted.png"
-                                      : "qrc:/res/image/speak.png"
+            id: wordImage
+            cache: false
+            asynchronous: true
+            visible: hasImageWord
+            source: "image://grunwald/" + (hasImageWord ? nameWord : "no_image")
         }
     }
 }

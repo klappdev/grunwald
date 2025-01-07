@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -24,27 +24,29 @@
 
 #include "model/WordModel.hpp"
 
-static constexpr const char* const TAG = "[WordModel] ";
-static constexpr const char* const DATETIME_FORMAT = "dd.MM.yyyy HH:mm:ss";
+namespace {
+    constexpr const char* const TAG = "[WordModel] ";
+    constexpr const char* const DATETIME_FORMAT = "dd.MM.yyyy HH:mm:ss";
+}
 
 namespace grunwald {
 
-    WordModel::WordModel(QObject* parent)
-        : QAbstractListModel(parent) {
+    const Word WordModel::EMPTY_WORD = {
+        .id = -1,
+        .name = tr("No words"),
+        .transcription = tr("<empty>"),
+        .translation = tr("<empty>"),
+        .association = tr("<empty>"),
+        .etymology = tr("<empty>"),
+        .description = tr("<empty>"),
+        .type = WordType::Unknown,
+        .image = WordImage{},
+        .date = QDateTime::currentDateTime()
+    };
 
+    WordModel::WordModel(QObject* parent) : QAbstractListModel(parent) {
         if (mWords.isEmpty()) {
-            mWords.append(Word{
-                .id = -1,
-                .name = tr("No words"),
-                .transcription = tr("<empty>"),
-                .translation = tr("<empty>"),
-                .association = tr("<empty>"),
-                .etymology = tr("<empty>"),
-                .description = tr("<empty>"),
-                .type = WordType::Unknown,
-                .image = WordImage{},
-                .date = QDateTime::currentDateTime()
-            });
+            mWords.append(EMPTY_WORD);
         }
     }
 

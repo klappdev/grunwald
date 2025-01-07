@@ -22,53 +22,31 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.15
+#pragma once
 
-import Theme 1.0
+#include <QAtomicPointer>
 
-Column {
-    id: root
-    spacing: Style.mediumOffset
+#include "common/Word.hpp"
 
-    property string translationWord: "<empty>"
-    property string associationWord: "<empty>"
-    property string etymologyWord: "<empty>"
-    property string descriptionWord: "<empty>"
+namespace grunwald {
 
-    WordCardView {
-        id: translationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+    class WordCache final {
+    public:
+        WordCache();
+        ~WordCache();
 
-        titleCard: qsTr("Translation")
-        contentCard: translationWord
-    }
+        bool isValid() const;
+        void clear();
 
-    WordCardView {
-        id: associationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+        void storeWordContent(const Word& newWord);
+        void storeWordImage(const WordImage& wordImage);
 
-        titleCard: qsTr("Association")
-        contentCard: associationWord
-    }
+        auto loadWordContent() const -> Word;
+        auto loadWordImage() const -> WordImage;
 
-    WordCardView {
-        id: etymologyWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+    private:
+        QAtomicPointer<Word> mData;
 
-        titleCard: qsTr("Etymology")
-        contentCard: etymologyWord
-    }
-
-    WordCardView {
-        id: descriptionCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
-
-        titleCard: qsTr("Description")
-        contentCard: descriptionWord
-    }
+        const static Word EMPTY_WORD;
+    };
 }
-

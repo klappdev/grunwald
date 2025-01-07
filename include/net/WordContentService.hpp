@@ -22,53 +22,47 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.15
+#pragma once
 
-import Theme 1.0
+#include <QtVersionChecks>
 
-Column {
-    id: root
-    spacing: Style.mediumOffset
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
+#include <QNetworkConfigurationManager>
+#endif
+#include <QNetworkAccessManager>
+#include <QUrl>
 
-    property string translationWord: "<empty>"
-    property string associationWord: "<empty>"
-    property string etymologyWord: "<empty>"
-    property string descriptionWord: "<empty>"
+#include "net/WordParser.hpp"
+#include "common/Word.hpp"
+#include "util/Error.hpp"
 
-    WordCardView {
-        id: translationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+namespace grunwald {
+    using NetworkError = Error;
 
-        titleCard: qsTr("Translation")
-        contentCard: translationWord
-    }
+    class WordContentService final : public QObject {
+        Q_OBJECT
+    public:
+        WordContentService(QObject* parent = nullptr);
+        ~WordContentService();
 
-    WordCardView {
-        id: associationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+        void fetchWordContent(const QString& name);
 
-        titleCard: qsTr("Association")
-        contentCard: associationWord
-    }
+    signals:
+        void wordContentProcessed(const Word& word);
 
-    WordCardView {
-        id: etymologyWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+        void wordContentErrorProcessed(const QString& error);
 
-        titleCard: qsTr("Etymology")
-        contentCard: etymologyWord
-    }
+    private slots:
+        void onWordContentRequestFinished();
 
-    WordCardView {
-        id: descriptionCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+    private:
+        bool checkInternetConnection();
 
-        titleCard: qsTr("Description")
-        contentCard: descriptionWord
-    }
+        QNetworkAccessManager mNetworkManager;
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
+        QNetworkConfigurationManager mNetworkConfigurationManager;
+#endif
+        WordParser mWordParser;
+        QString mWordName;
+    };
 }
-

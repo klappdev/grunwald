@@ -24,12 +24,19 @@ set(HEADERS
     include/common/WordType.hpp
     include/common/WordImage.hpp
 
-    include/storage/WordStorage.hpp
+    include/cache/WordCache.hpp
     include/db/WordDao.hpp
+    include/storage/WordStorage.hpp
+
     include/net/WordParser.hpp
-    include/net/WordService.hpp
+    include/net/WordContentService.hpp
+    include/net/WordImageService.hpp
+
 
     include/model/WordModel.hpp
+
+    include/image/AsyncWordImageProvider.hpp
+    include/image/AsyncWordImageResponse.hpp
 
     include/util/Error.hpp
     include/util/Result.hpp
@@ -39,12 +46,18 @@ set(HEADERS
 set(SOURCES
     main.cpp
 
-    src/storage/WordStorage.cpp
+    src/cache/WordCache.cpp
     src/db/WordDao.cpp
+    src/storage/WordStorage.cpp
+
     src/net/WordParser.cpp
-    src/net/WordService.cpp
+    src/net/WordContentService.cpp
+    src/net/WordImageService.cpp
 
     src/model/WordModel.cpp
+
+    src/image/AsyncWordImageProvider.cpp
+    src/image/AsyncWordImageResponse.cpp
 )
 
 set(RESOURCES

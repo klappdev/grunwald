@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -26,6 +26,8 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
 
+import grunwald.WordStorage 1.0
+
 import WordSearch 1.0
 import WordList 1.0
 import WordDetail 1.0
@@ -34,14 +36,18 @@ import Theme 1.0
 ApplicationWindow {
     visible: true
     width: 1080
-    height: 840
+    height: 960
     title: qsTr("Grunwald")
     color: Style.backgroundColor
+
+    Component.onCompleted: {
+        //WordStorage.preloadWords() //FIXME: return back
+    }
 
     SearchWordView {
         id: searchWordView
         width: parent.width
-        height: parent.height / 8
+        height: parent.height / 9
 
         anchors {
             left: parent.left
@@ -53,7 +59,7 @@ ApplicationWindow {
     WordListView {
         id: wordListView
         width: Window.width * 1 / 3
-        height: parent.height * 7 / 8
+        height: parent.height * 7 / 9
 
         anchors {
             left: parent.left
@@ -64,6 +70,8 @@ ApplicationWindow {
             margins: 2
         }
         onSelectedWordChanged: {
+            wordDetailView.hasImageWord = selectedWord.hasImage()
+
             wordDetailView.nameWord = selectedWord.name
             wordDetailView.translationWord = selectedWord.translation
             wordDetailView.transcriptionWord = selectedWord.transcription
@@ -78,7 +86,7 @@ ApplicationWindow {
     WordDetailView {
         id: wordDetailView
         width: parent.width * 2 / 3
-        height: parent.height * 7 / 8
+        height: parent.height * 7 / 9
 
         anchors {
             left: wordListView.right

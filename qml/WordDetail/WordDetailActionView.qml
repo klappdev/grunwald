@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.9
-import QtQuick.Controls 2.2
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Dialogs 6.6
 
 import grunwald.WordStorage 1.0
@@ -39,7 +39,7 @@ Row {
         id: saveWordDialog
         modality: Qt.ApplicationModal //Qt.WindowModal
         buttons: MessageDialog.Ok
-        title: "Save word"
+        title: qsTr("Save word")
     }
 
     RoundButton {
@@ -47,7 +47,7 @@ Row {
         width: 100
         height: 35
 
-        text: qsTr("Save")
+        text: WordStorage.wordCached ? qsTr("Remove") : qsTr("Save")
         icon.source: Style.isDarkTheme ? "qrc:/res/image/star_inverted.png"
                                        : "qrc:/res/image/star.png"
         font {
@@ -89,7 +89,11 @@ Row {
         onClicked: {
             var nameWord = wordDetailHeaderView.nameWord
 
-            if (WordStorage.isWordCached(nameWord)) {
+            if (nameWord === qsTr("No words")) {
+                return
+            }
+
+            if (WordStorage.wordCached) {
                 WordStorage.removeWord()
 
                 var notSaveWordMessage = `Remove word: ${nameWord}`

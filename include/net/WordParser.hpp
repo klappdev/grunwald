@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * SPDX-License-Identifier: MIT
- * Copyright (c) 2023-2024 https://github.com/klappdev
+ * Copyright (c) 2023-2025 https://github.com/klappdev
  *
  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
  * of this software and associated  documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ namespace grunwald {
         ~WordParser();
 
         auto parseWordContent(const QString& name, const QByteArray& remoteData) -> Result<Word, ParserError>;
-        auto parseWordImage(const QByteArray& remoteData) -> Result<QUrl, ParserError>;
+        auto parseWordImage(const QByteArray& remoteData) -> Result<WordImage, ParserError>;
 
     private:
         auto parseRemoteWord(const QString& name, const QString& remoteData) -> Result<Word, ParserError>;

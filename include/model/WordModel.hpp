@@ -63,5 +63,7 @@ namespace grunwald {
         };
 
         QList<Word> mWords;
+
+        const static Word EMPTY_WORD;
     };
 }

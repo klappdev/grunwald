@@ -22,53 +22,35 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.15
+#pragma once
 
-import Theme 1.0
+#include <QQuickImageProvider>
 
-Column {
-    id: root
-    spacing: Style.mediumOffset
+#include "cache/WordCache.hpp"
+#include "net/WordImageService.hpp"
 
-    property string translationWord: "<empty>"
-    property string associationWord: "<empty>"
-    property string etymologyWord: "<empty>"
-    property string descriptionWord: "<empty>"
+namespace grunwald {
 
-    WordCardView {
-        id: translationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+    class AsyncWordImageResponse final : public QQuickImageResponse {
+        Q_OBJECT
+    public:
+        AsyncWordImageResponse(WordCache* wordCache, const QString& imageId, const QSize& requestedSize);
+        ~AsyncWordImageResponse();
 
-        titleCard: qsTr("Translation")
-        contentCard: translationWord
-    }
+        QQuickTextureFactory* textureFactory() const override;
 
-    WordCardView {
-        id: associationWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+    private slots:
+        void onResponseFinished(const WordImage& wordImage);
+        void onResponseCacheFinished(const WordImage& wordImage);
+        void onResponseError(const QString& error);
 
-        titleCard: qsTr("Association")
-        contentCard: associationWord
-    }
+    private:
+        void searchWordImage(const QString& name);
 
-    WordCardView {
-        id: etymologyWordCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
+        WordCache* mWordCache;
+        WordImageService mWordImageService;
 
-        titleCard: qsTr("Etymology")
-        contentCard: etymologyWord
-    }
-
-    WordCardView {
-        id: descriptionCard
-        width: parent.width
-        height: parent.height * 1 / 4 - 10
-
-        titleCard: qsTr("Description")
-        contentCard: descriptionWord
-    }
+        QImage mImage;
+        QSize mRequestedSize;
+    };
 }
-
